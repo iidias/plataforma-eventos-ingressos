@@ -5,7 +5,7 @@ build/
 .env
 .env.*
 !.env.example
-TAREFAS-ELITE-DEV
+*TAREFAS-ELITE-DEV*
 *.log
 .DS_Store
 ```
