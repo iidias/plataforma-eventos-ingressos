@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ORGANIZER
+  CUSTOMER
+  GATE
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ReservationStatus {
+  PENDING
+  PAID
+  REJECTED
+}
+
+enum PaymentStatus {
+  APPROVED
+  REJECTED
+}
+
+enum TicketStatus {
+  VALID
+  USED
+}
+
+model User {
+  id              String        @id @default(uuid())
+  name            String
+  email           String        @unique
+  passwordHash    String
+  role            Role
+  createdAt       DateTime      @default(now())
+
+  organizedEvents Event[]       @relation("OrganizerEvents")
+  reservations    Reservation[]
+  tickets         Ticket[]      @relation("CustomerTickets")
+  validatedTickets Ticket[]     @relation("ValidatedTickets")
+}
+
+model Event {
+  id          String      @id @default(uuid())
+  organizerId String
+  externalId  String
+  title       String
+  synopsis    String
+  imageUrl    String?
+  eventDate   DateTime
+  venue       String
+  capacity    Int
+  soldCount   Int         @default(0)
+  priceCents  Int
+  status      EventStatus @default(DRAFT)
+  createdAt   DateTime    @default(now())
+
+  organizer   User          @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  reservations Reservation[]
+  tickets     Ticket[]
+}
+
+model Reservation {
+  id         String            @id @default(uuid())
+  eventId    String
+  customerId String
+  quantity   Int
+  totalCents Int
+  status     ReservationStatus @default(PENDING)
+  createdAt  DateTime          @default(now())
+
+  event      Event    @relation(fields: [eventId], references: [id])
+  customer   User     @relation(fields: [customerId], references: [id])
+  payment    Payment?
+  tickets    Ticket[]
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  reservationId String        @unique
+  status        PaymentStatus
+  reason        String?
+  createdAt     DateTime      @default(now())
+
+  reservation   Reservation   @relation(fields: [reservationId], references: [id])
+}
+
+model Ticket {
+  id            String       @id @default(uuid())
+  reservationId String
+  eventId       String
+  customerId    String
+  code          String       @unique
+  status        TicketStatus @default(VALID)
+  usedAt        DateTime?
+  validatedById String?
+  shareToken    String       @unique
+  createdAt     DateTime     @default(now())
+
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  event         Event       @relation(fields: [eventId], references: [id])
+  customer      User        @relation("CustomerTickets", fields: [customerId], references: [id])
+  validatedBy   User?       @relation("ValidatedTickets", fields: [validatedById], references: [id])
+}

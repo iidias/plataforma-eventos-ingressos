@@ -8,4 +8,8 @@ build/
 *TAREFAS-ELITE-DEV*
 *.log
 .DS_Store
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
 ```
