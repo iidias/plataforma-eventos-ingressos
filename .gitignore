@@ -1,0 +1,11 @@
+```gitignore
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+TAREFAS-ELITE-DEV
+*.log
+.DS_Store
+```
