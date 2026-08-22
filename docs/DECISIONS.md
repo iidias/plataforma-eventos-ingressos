@@ -15,3 +15,6 @@ Visto que o TS, exige mais tempo de configuração e aprendizado o que não seri
 
 D6 - Nome do Projeto.
 Como irei utilizar a api da TMDB, na qual o foco é filme, optei por escolher o nome para IngressoFilm
+
+D7 - DESIGN.
+Escolha de paleta, fontes e formatos de icones. possivel se visualizar de forma geral olhando o png "Sistema de design" na pasta design.
