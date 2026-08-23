@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* Design system do projeto (docs/design/Codigo de telas figma/src/index.css).
+   As cores e fontes abaixo vieram do Figma — não inventar novos valores. */
+@theme {
+  /* Cores */
+  --color-background: #FFFFFF;
+  --color-surface: #F7F7F7;
+  --color-surface-elevated: #EFEFEF;
+
+  --color-primary: #E5181B;
+  --color-primary-hover: #CC1518;
+  --color-primary-active: #B31214;
+
+  --color-secondary: #1A1A1A;
+
+  --color-text-primary: #111111;
+  --color-text-secondary: #4A4A4A;
+  --color-text-muted: #9A9A9A;
+
+  --color-border: #E0E0E0;
+
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-error: #E5181B;
+  --color-info: #2563EB;
+
+  /* Tipografia */
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'Outfit', sans-serif;
+
+  /* Border radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+}
+
+/* Base */
+html, body {
+  background-color: #FFFFFF;
+  color: #111111;
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9A9A9A; }
+
+/* Escala tipográfica */
+.type-display {
+  font-family: 'DM Serif Display', serif;
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+.type-h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+.type-h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+.type-h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.type-h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.type-body-lg {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.type-body {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.type-body-sm {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.type-caption {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
