@@ -13,7 +13,9 @@ Back-end: banco modelado com Prisma, login com JWT e controle por papel, integra
 
 Front-end: base do projeto com Vite, Tailwind configurado com as cores e fontes do design, roteamento com React Router, cliente HTTP centralizado, contexto de autenticação e rotas protegidas por papel. As telas prontas são: login (com atalhos que preenchem as credenciais de teste), lista de eventos com busca, detalhe do evento com seletor de quantidade e total, painel do organizador, criação de evento em dois passos (busca no catálogo e depois o formulário), além do layout com header e da página 404.
 
-O que ainda falta: reserva, checkout com pagamento simulado, geração e compartilhamento dos ingressos e a tela da portaria.
+O cadastro padrão cria uma conta de cliente, com a opção de marcar "Sou organizador" para criar uma conta de organizador. A mesma pessoa pode ter os dois acessos usando e-mails diferentes. Cada evento terá uma única credencial temporária e compartilhável para a portaria, gerada ao criar o evento, exibida ao organizador e vinculada somente àquele evento. Ela poderá ser regenerada, funcionará antes e durante o evento e expirará depois do fim do dia.
+
+O que ainda falta: cadastro de usuários, reserva, checkout com pagamento simulado, geração e compartilhamento dos ingressos, geração e autenticação da credencial temporária e a tela da portaria.
 
 Stack que vou usar
 Front-end: React + Vite
@@ -68,7 +70,7 @@ Copie o `.env.example` para `.env` — ele já vem com `VITE_API_URL=http://loca
 npm run dev
 ```
 
-Abra http://localhost:5173. Na tela de login tem três atalhos que preenchem as credenciais do seed e já entram, um para cada papel (cliente, organizador e portaria), então dá para testar tudo sem precisar decorar e-mail e senha.
+Abra http://localhost:5173. Durante a fase de teste, a tela de login pode usar os atalhos das contas de cliente e organizador do seed. A credencial da portaria será criada por evento, conforme o fluxo documentado acima.
 
 Para gerar a build de produção do front-end:
 

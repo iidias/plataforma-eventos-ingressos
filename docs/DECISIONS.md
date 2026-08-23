@@ -31,5 +31,14 @@ Todas as telas chamam a API pelo mesmo lugar. Ele monta a URL a partir do VITE_A
 D11 - ProtectedRoute é experiência, não segurança.
 As rotas do front conferem se tem usuário logado e se o papel bate (CUSTOMER, ORGANIZER ou GATE); se não bate, redireciona. Isso existe pra pessoa não cair numa tela que ela não pode usar. A autorização de verdade continua no back-end, nos middlewares de auth e de papel, porque qualquer um consegue mexer no navegador.
 
-D12 - Atalhos de credenciais na tela de login.
-Coloquei três botões que preenchem o e-mail e a senha do seed e já entram, um pra cada papel. Quem for avaliar o projeto consegue trocar de cliente pra organizador e pra portaria em um clique, sem precisar procurar as credenciais no código. Custou pouco e economiza tempo de quem testa.
+D12 - Atalhos das contas de cliente e organizador na tela de login.
+Os atalhos preenchem as credenciais das contas de teste do seed para facilitar a avaliação. A portaria não terá atalho fixo: sua credencial será gerada por evento.
+
+D13 - Cadastro com opção de organizador.
+O cadastro padrão cria `CUSTOMER`. A opção "Sou organizador" cria `ORGANIZER`. Uma pessoa pode ter os dois acessos, mas precisa usar e-mails diferentes, porque cada e-mail identifica uma única conta e um único papel.
+
+D14 - Credencial temporária única por evento para a portaria.
+A portaria não será um usuário fixo do seed. Cada evento terá uma única credencial compartilhável, gerada automaticamente e vinculada diretamente ao evento. Ela poderá ser usada antes e durante o evento, expirará ou será excluída depois do fim do dia e permitirá somente validar ingressos daquele evento.
+
+D15 - Regeneração da credencial da portaria.
+O organizador verá usuário e senha nas informações do evento e poderá regenerar a senha. A senha anterior será invalidada imediatamente. Como a senha precisa ser exibida ao organizador, essa credencial terá tratamento próprio, diferente da senha de usuário armazenada somente como hash.
