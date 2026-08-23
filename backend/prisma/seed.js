@@ -9,6 +9,39 @@ const USERS = [
   { name: 'Portaria Teste', email: 'portaria@teste.com', password: 'senha123', role: 'GATE' },
 ];
 
+// Dados do filme fixos de propósito (tarefa 56): assim o seed funciona
+// mesmo que o TMDb esteja fora do ar.
+const EVENT = {
+  externalId: '27205',
+  title: 'A Origem',
+  synopsis:
+    'Dom Cobb é um ladrão com a rara habilidade de roubar segredos do inconsciente, obtidos durante o estado de sono. Impedido de retornar para sua família, ele recebe a oportunidade de se redimir ao realizar uma tarefa aparentemente impossível: plantar uma ideia na mente do herdeiro de um império.',
+  imageUrl: 'https://image.tmdb.org/t/p/w500/9e3Dz7aCANy5aRUQF745IlNloJ1.jpg',
+  venue: 'Cine Belas Artes — São Paulo/SP',
+  capacity: 50,
+  priceCents: 3500,
+};
+
+async function seedEvent(organizerId) {
+  const existing = await prisma.event.findFirst({
+    where: { organizerId, externalId: EVENT.externalId },
+  });
+
+  if (existing) {
+    console.log(`Evento já existe: ${existing.title}`);
+    return;
+  }
+
+  const eventDate = new Date();
+  eventDate.setDate(eventDate.getDate() + 30);
+
+  const event = await prisma.event.create({
+    data: { ...EVENT, organizerId, eventDate, status: 'PUBLISHED' },
+  });
+
+  console.log(`Evento criado: ${event.title} (${event.capacity} lugares)`);
+}
+
 async function main() {
   for (const u of USERS) {
     const passwordHash = await bcrypt.hash(u.password, 10);
@@ -27,6 +60,12 @@ async function main() {
 
     console.log(`Usuário garantido: ${u.email} (${u.role})`);
   }
+
+  const organizer = await prisma.user.findUnique({
+    where: { email: 'organizador@teste.com' },
+  });
+
+  await seedEvent(organizer.id);
 }
 
 main()
