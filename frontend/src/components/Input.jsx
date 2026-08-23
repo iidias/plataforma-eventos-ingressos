@@ -10,6 +10,7 @@ export default function Input({
   placeholder,
   error,
   disabled = false,
+  suffix,
   className = '',
   ...rest
 }) {
@@ -24,27 +25,31 @@ export default function Input({
           {label}
         </label>
       )}
-      <input
-        id={inputId}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? errorId : undefined}
-        className={[
-          'h-10 px-4 rounded-[4px] border font-[Outfit] text-[14px] text-[#111111]',
-          'placeholder-[#9A9A9A] outline-none transition-colors',
-          'focus:border-[#E5181B] focus:ring-1 focus:ring-[#E5181B]/20',
-          error ? 'border-[#E5181B]' : 'border-[#E0E0E0]',
-          disabled ? 'bg-[#F7F7F7] text-[#9A9A9A] cursor-not-allowed' : 'bg-white',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        {...rest}
-      />
+      <div className="relative flex items-center">
+        <input
+          id={inputId}
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          className={[
+            'h-10 w-full px-4 rounded-[4px] border font-[Outfit] text-[14px] text-[#111111]',
+            'placeholder-[#9A9A9A] outline-none transition-colors',
+            'focus:border-[#E5181B] focus:ring-1 focus:ring-[#E5181B]/20',
+            suffix ? 'pr-10' : '',
+            error ? 'border-[#E5181B]' : 'border-[#E0E0E0]',
+            disabled ? 'bg-[#F7F7F7] text-[#9A9A9A] cursor-not-allowed' : 'bg-white',
+            className,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          {...rest}
+        />
+        {suffix && <span className="absolute right-3 text-[#9A9A9A]">{suffix}</span>}
+      </div>
       {error && (
         <span id={errorId} className="text-[12px] font-[Outfit] text-[#E5181B]">
           {error}

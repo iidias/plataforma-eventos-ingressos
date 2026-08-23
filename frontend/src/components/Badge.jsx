@@ -5,6 +5,7 @@ const colors = {
   gray: 'bg-[#EFEFEF] text-[#4A4A4A]',
   green: 'bg-[#DCFCE7] text-[#16A34A]',
   amber: 'bg-[#FEF3C7] text-[#D97706]',
+  blue: 'bg-[#EFF6FF] text-[#2563EB]',
 };
 
 export default function Badge({ color = 'gray', className = '', children, ...rest }) {
