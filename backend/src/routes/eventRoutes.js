@@ -6,6 +6,7 @@ import {
   getPublishedById,
   updateEvent,
   publishEvent,
+  regenerateGatePassword,
 } from '../services/eventService.js';
 import { auth } from '../middlewares/auth.js';
 import { requireRole } from '../middlewares/requireRole.js';
@@ -87,6 +88,16 @@ router.patch('/:id', auth, requireRole('ORGANIZER'), async (req, res, next) => {
 router.post('/:id/publish', auth, requireRole('ORGANIZER'), async (req, res, next) => {
   try {
     res.json(await publishEvent(req.params.id, req.user.sub));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Gera uma nova senha para a portaria do evento. Só o dono do evento pode,
+// a senha anterior para de funcionar na hora e a nova aparece só nesta resposta.
+router.post('/:id/gate/regenerate', auth, requireRole('ORGANIZER'), async (req, res, next) => {
+  try {
+    res.json(await regenerateGatePassword(req.params.id, req.user.sub));
   } catch (error) {
     next(error);
   }

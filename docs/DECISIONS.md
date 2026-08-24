@@ -31,14 +31,20 @@ Todas as telas chamam a API pelo mesmo lugar. Ele monta a URL a partir do VITE_A
 D11 - ProtectedRoute é experiência, não segurança.
 As rotas do front conferem se tem usuário logado e se o papel bate (CUSTOMER, ORGANIZER ou GATE); se não bate, redireciona. Isso existe pra pessoa não cair numa tela que ela não pode usar. A autorização de verdade continua no back-end, nos middlewares de auth e de papel, porque qualquer um consegue mexer no navegador.
 
-D12 - Atalhos das contas de cliente e organizador na tela de login.
-Os atalhos preenchem as credenciais das contas de teste do seed para facilitar a avaliação. A portaria não terá atalho fixo: sua credencial será gerada por evento.
+D12 - Atalhos de teste para cliente, organizador e portaria.
+A tela de login manterá três atalhos para facilitar a avaliação. O terceiro usa um usuário `GATE` de demonstração criado no seed e vinculado ao evento de teste. Isso é uma exceção de teste; em eventos normais, o usuário `GATE` é criado automaticamente quando o organizador cria o evento.
 
 D13 - Cadastro com opção de organizador.
 O cadastro padrão cria `CUSTOMER`. A opção "Sou organizador" cria `ORGANIZER`. Uma pessoa pode ter os dois acessos, mas precisa usar e-mails diferentes, porque cada e-mail identifica uma única conta e um único papel.
 
-D14 - Credencial temporária única por evento para a portaria.
-A portaria não será um usuário fixo do seed. Cada evento terá uma única credencial compartilhável, gerada automaticamente e vinculada diretamente ao evento. Ela poderá ser usada antes e durante o evento, expirará ou será excluída depois do fim do dia e permitirá somente validar ingressos daquele evento.
+D14 - Usuário GATE temporário e único por evento, criado na publicação.
+A portaria é um `User` com papel `GATE`, sem cadastro público. A credencial nasce quando o evento é **publicado**, não quando é criado: um rascunho não tem ingresso para validar, então gerar credencial ali só produziria lixo para eventos que nunca saem do papel. Quem garante o "um por evento" é o banco, não o código — `gateEventId` é `@unique`, então duas publicações simultâneas não conseguem criar duas credenciais. O usuário funciona antes e durante o evento e expira depois. O seed tem uma exceção de demonstração: um `GATE` fixo vinculado ao evento de teste, que alimenta o terceiro atalho de login.
 
-D15 - Regeneração da credencial da portaria.
-O organizador verá usuário e senha nas informações do evento e poderá regenerar a senha. A senha anterior será invalidada imediatamente. Como a senha precisa ser exibida ao organizador, essa credencial terá tratamento próprio, diferente da senha de usuário armazenada somente como hash.
+D15 - A senha do GATE é exibida uma vez; o usuário fica sempre visível.
+Havia uma tensão aqui: "o organizador vê a credencial do evento" contra "a senha aparece uma vez só". Os wireframes (`visualizar credencial.png`) resolvem: o **usuário** fica sempre disponível na ação **Credencial** da lista de eventos, e a **senha** só aparece no instante em que é gerada ou regenerada. Não é limitação de tela, é consequência do banco: guardo `passwordHash`, não a senha. Para exibir a senha depois eu teria que guardá-la reversível, que é exatamente o que não se faz. Quem perdeu a senha gera outra — um clique, e a anterior morre na hora.
+
+D16 - Regenerar a senha derruba também as sessões já abertas.
+Invalidar só a senha resolvia metade do problema: quem já estava logado na portaria continuaria validando ingressos por até 7 dias com a credencial que o organizador acabou de revogar — inútil justamente no caso que motiva a regeneração (alguém da equipe saiu). O token do `GATE` carrega uma impressão digital derivada do hash da senha, e o middleware compara com a do banco a cada requisição. Senha regenerada, impressão muda, sessão antiga cai com 401. Só o `GATE` paga esse custo: é o único papel cuja credencial é revogável pelo organizador, e é o único que já consultava o banco a cada requisição por causa da validade.
+
+D17 - Edição de evento fica sem tela nesta entrega.
+`PATCH /events/:id` existe, valida dono e impede capacidade menor que o já vendido. Mas não desenhei tela de edição e ela não faz parte do escopo desta etapa, então o botão "Editar" fica desabilitado em vez de abrir uma tela improvisada. Prefiro um botão honestamente desligado a uma tela meia-boca — e o próprio plano lista "editar evento" como o primeiro corte aceitável depois de testes e deploy.

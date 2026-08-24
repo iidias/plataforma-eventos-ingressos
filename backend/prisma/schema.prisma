@@ -41,6 +41,12 @@ model User {
   role            Role
   createdAt       DateTime      @default(now())
 
+  // Só usuários GATE preenchem estes campos. gateEventId é @unique: é ele
+  // que garante, no banco, no máximo uma credencial de portaria por evento.
+  gateEventId     String?       @unique
+  gateExpiresAt   DateTime?
+
+  gateEvent       Event?        @relation("EventGate", fields: [gateEventId], references: [id])
   organizedEvents Event[]       @relation("OrganizerEvents")
   reservations    Reservation[]
   tickets         Ticket[]      @relation("CustomerTickets")
@@ -63,6 +69,7 @@ model Event {
   createdAt   DateTime    @default(now())
 
   organizer   User          @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  gateUser    User?         @relation("EventGate")
   reservations Reservation[]
   tickets     Ticket[]
 }

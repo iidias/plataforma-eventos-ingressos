@@ -1,15 +1,17 @@
 
 ## User — quem consegue entrar no sistema
 
-Toda pessoa que faz login como cliente ou organizador é um `User`. Guarda nome, e-mail, senha (criptografada, nunca "crua") e um campo `role` que diz o que a pessoa pode fazer: `ORGANIZER` (organiza eventos) ou `CUSTOMER` (compra ingresso). O e-mail é único; para ter os dois papéis, a pessoa precisa de duas contas com e-mails diferentes.
+Toda pessoa que faz login é um `User`. Guarda nome, e-mail, senha (criptografada, nunca "crua") e um campo `role` que diz o que a pessoa pode fazer: `ORGANIZER` (organiza eventos), `CUSTOMER` (compra ingresso) ou `GATE` (valida ingressos de um evento). O e-mail é único; para ter os papéis de cliente e organizador, a pessoa precisa de duas contas com e-mails diferentes. Usuários `GATE` não são criados pelo cadastro público.
 
 É esse campo que decide o que cada um vê e pode fazer no sistema. Se o `role` for `CUSTOMER`, a pessoa nem consegue acessar a tela de criar evento.
 
 ## Credencial de portaria — acesso temporário do evento
 
-A portaria não será uma conta `User` fixa nem terá cadastro próprio. Cada evento terá exatamente uma credencial temporária, compartilhável entre as pessoas responsáveis pela entrada. Essa credencial deve guardar o vínculo um-para-um com o evento, a senha protegida, a validade e o estado ativo ou expirado.
+A portaria é um `User` com papel `GATE`, criado automaticamente quando o evento é **publicado** — rascunho não tem portaria, porque ainda não há ingresso para validar. Cada evento tem exatamente um usuário `GATE`, com e-mail e senha gerados pelo sistema, compartilhável entre as pessoas responsáveis pela entrada. Quem garante o "exatamente um" é o banco: a coluna `gateEventId` é `@unique`, então nem duas publicações simultâneas conseguem criar duas credenciais.
 
-O organizador verá o usuário e a senha nas informações do evento e poderá regenerar a senha. A regeneração invalida a anterior. A credencial pode funcionar antes do evento, mas deve expirar ou ser excluída depois do fim do dia do evento. Ao autenticar, a portaria terá acesso somente à validação de ingressos do evento associado.
+O organizador abre a credencial pela ação **Credencial** na lista de eventos. Ele vê sempre o **usuário**; a **senha** aparece só no instante em que é gerada ou regenerada, porque na tabela existe apenas o `passwordHash` — não há de onde ler a senha depois. Perdeu, gera outra. A regeneração invalida a senha anterior e também as sessões que já estavam abertas com ela.
+
+O usuário `GATE` funciona antes e durante o evento e expira um dia depois do fim do dia do evento (`gateExpiresAt`). Expirado, ele para de autenticar, mas **não é excluído**: apagar o usuário levaria junto o registro de quem validou cada ingresso (`Ticket.validatedById`), que é justamente o histórico que interessa guardar. Ao autenticar, a portaria só enxerga o evento associado — o evento vem do banco, nunca da requisição.
 
 ## Event — o evento em si
 

@@ -120,3 +120,24 @@ export const IconMenu = () => (
     <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
+
+// Chave: ação "Credencial" na lista de eventos do organizador.
+export const IconKey = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+    <circle cx="5" cy="5" r="3.3" stroke="currentColor" strokeWidth="1.3" />
+    <path d="M7.5 7.5L12 12M10 10l1.5-1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+);
+
+export const IconCopy = () => (
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+    <rect x="4" y="1" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.2" />
+    <rect x="1" y="3" width="7" height="8" rx="1" stroke="currentColor" strokeWidth="1.2" fill="white" />
+  </svg>
+);
+
+export const IconCheckSmall = () => (
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+    <path d="M2 6.5l3 3 5-5" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);

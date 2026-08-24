@@ -13,6 +13,7 @@ import Input from '../components/Input.jsx';
 import SearchInput from '../components/SearchInput.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import StepIndicator from '../components/StepIndicator.jsx';
+import GateCredentialCard from '../components/GateCredentialCard.jsx';
 import Toggle from '../components/Toggle.jsx';
 import { IconChevronRight, IconFilm } from '../components/icons.jsx';
 
@@ -130,7 +131,7 @@ export default function NewEvent() {
   // Confirmação após criar
   if (createdEvent) {
     return (
-      <div className="bg-[#F7F7F7] flex-1 flex items-center justify-center px-6 py-12">
+      <div className="bg-[#F7F7F7] flex-1 flex flex-col items-center justify-center gap-6 px-6 py-12">
         <div className="bg-white border border-[#E0E0E0] rounded-[6px] p-10 max-w-sm w-full flex flex-col items-center gap-5 text-center">
           <span className="w-16 h-16 rounded-full bg-[#F0FDF4] flex items-center justify-center text-[#16A34A]">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
@@ -158,6 +159,14 @@ export default function NewEvent() {
             Voltar ao painel
           </Button>
         </div>
+
+        {/* Publicando direto na criação, a credencial da portaria nasce junto.
+            A senha aparece só aqui. */}
+        {createdEvent.gate?.password && (
+          <div className="max-w-sm w-full">
+            <GateCredentialCard gate={createdEvent.gate} />
+          </div>
+        )}
       </div>
     );
   }

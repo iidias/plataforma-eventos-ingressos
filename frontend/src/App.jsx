@@ -5,6 +5,7 @@ import Layout from './components/Layout.jsx';
 import ProtectedRoute from './routes/ProtectedRoute.jsx';
 
 import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
 import Events from './pages/Events.jsx';
 import EventDetail from './pages/EventDetail.jsx';
 import Checkout from './pages/Checkout.jsx';
@@ -19,8 +20,9 @@ import NotFound from './pages/NotFound.jsx';
 export default function App() {
   return (
     <Routes>
-      {/* O login tem tela cheia própria, sem o header global. */}
+      {/* Login e cadastro têm tela cheia própria, sem o header global. */}
       <Route path="/login" element={<Login />} />
+      <Route path="/cadastro" element={<Register />} />
 
       <Route element={<Layout />}>
         {/* Públicas — acompanham o backend, onde GET /events e GET /events/:id

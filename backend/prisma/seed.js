@@ -1,13 +1,23 @@
-import bcrypt from 'bcryptjs';
 import prisma from '../src/lib/prisma.js';
+import { hashPassword } from '../src/lib/password.js';
+import { gateExpiresAtFor } from '../src/lib/gateCredential.js';
 
-// Os 4 usuários de teste exigidos pelo desafio (tarefa 42).
+// Contas de teste exigidas pelo desafio (tarefa 42).
+// A portaria NÃO entra aqui: ela depende do evento existir primeiro.
 const USERS = [
   { name: 'Organizador Teste', email: 'organizador@teste.com', password: 'senha123', role: 'ORGANIZER' },
   { name: 'Cliente 1', email: 'cliente1@teste.com', password: 'senha123', role: 'CUSTOMER' },
   { name: 'Cliente 2', email: 'cliente2@teste.com', password: 'senha123', role: 'CUSTOMER' },
-  { name: 'Portaria Teste', email: 'portaria@teste.com', password: 'senha123', role: 'GATE' },
 ];
+
+// Exceção de demonstração: em eventos normais a credencial de portaria é
+// gerada com e-mail e senha aleatórios na publicação. Aqui ela é fixa, porque
+// o atalho de portaria da tela de login depende de credenciais conhecidas.
+const DEMO_GATE = {
+  name: 'Portaria Teste',
+  email: 'portaria@teste.com',
+  password: 'senha123',
+};
 
 // Dados do filme fixos de propósito (tarefa 56): assim o seed funciona
 // mesmo que o TMDb esteja fora do ar.
@@ -29,7 +39,7 @@ async function seedEvent(organizerId) {
 
   if (existing) {
     console.log(`Evento já existe: ${existing.title}`);
-    return;
+    return existing;
   }
 
   const eventDate = new Date();
@@ -40,11 +50,50 @@ async function seedEvent(organizerId) {
   });
 
   console.log(`Evento criado: ${event.title} (${event.capacity} lugares)`);
+
+  return event;
+}
+
+// Cria (ou adota) a credencial de demonstração e a vincula ao evento do seed.
+// O upsert também resolve o usuário GATE antigo, que existia solto no banco
+// sem vínculo nenhum: ele passa a apontar para o evento de demonstração.
+async function seedDemoGate(event) {
+  const passwordHash = await hashPassword(DEMO_GATE.password);
+  const gateExpiresAt = gateExpiresAtFor(event.eventDate);
+
+  // Se outra credencial já ocupa este evento (gateEventId é @unique), ela é
+  // desvinculada antes, para o seed continuar reexecutável.
+  await prisma.user.updateMany({
+    where: { gateEventId: event.id, email: { not: DEMO_GATE.email } },
+    data: { gateEventId: null },
+  });
+
+  const gate = await prisma.user.upsert({
+    where: { email: DEMO_GATE.email },
+    update: {
+      passwordHash,
+      role: 'GATE',
+      gateEventId: event.id,
+      gateExpiresAt,
+    },
+    create: {
+      name: DEMO_GATE.name,
+      email: DEMO_GATE.email,
+      passwordHash,
+      role: 'GATE',
+      gateEventId: event.id,
+      gateExpiresAt,
+    },
+  });
+
+  console.log(
+    `Portaria de demonstração: ${gate.email} → evento "${event.title}" (válida até ${gate.gateExpiresAt.toISOString()})`,
+  );
 }
 
 async function main() {
   for (const u of USERS) {
-    const passwordHash = await bcrypt.hash(u.password, 10);
+    const passwordHash = await hashPassword(u.password);
 
     // upsert em vez de create: rodar o seed de novo não quebra por e-mail duplicado.
     await prisma.user.upsert({
@@ -65,7 +114,10 @@ async function main() {
     where: { email: 'organizador@teste.com' },
   });
 
-  await seedEvent(organizer.id);
+  // Ordem obrigatória: organizador -> evento -> portaria vinculada ao evento.
+  const event = await seedEvent(organizer.id);
+
+  await seedDemoGate(event);
 }
 
 main()

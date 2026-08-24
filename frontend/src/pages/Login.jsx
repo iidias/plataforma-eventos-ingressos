@@ -2,7 +2,7 @@
 // Chama POST /auth/login pelo client HTTP, guarda a sessão no AuthContext e
 // redireciona conforme o papel do usuário.
 import { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { homePathForRole } from '../routes/ProtectedRoute.jsx';
@@ -129,6 +129,13 @@ export default function Login() {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
+
+          <p className="font-[Outfit] text-[13px] text-[#4A4A4A] text-center">
+            Não tem conta?{' '}
+            <Link to="/cadastro" className="text-[#E5181B] font-medium hover:underline">
+              Criar conta
+            </Link>
+          </p>
 
           <div className="flex items-center gap-3">
             <span className="flex-1 h-px bg-[#E0E0E0]" />

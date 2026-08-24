@@ -11,7 +11,9 @@ import Button from '../components/Button.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Skeleton from '../components/Skeleton.jsx';
-import { IconCalendar, IconLocation, IconEdit, IconEye, IconPlus, IconFilm } from '../components/icons.jsx';
+import GateCredentialCard from '../components/GateCredentialCard.jsx';
+import GateCredentialModal from '../components/GateCredentialModal.jsx';
+import { IconCalendar, IconLocation, IconEdit, IconEye, IconKey, IconPlus, IconFilm } from '../components/icons.jsx';
 import { formatDateTime } from '../lib/format.js';
 
 function percentSold(event) {
@@ -34,6 +36,23 @@ export default function OrganizerDashboard() {
   const [error, setError] = useState('');
   const [publishingId, setPublishingId] = useState(null);
   const [actionError, setActionError] = useState('');
+  // Credencial recém-gerada: só existe em memória, logo após a publicação.
+  const [newGate, setNewGate] = useState(null);
+  // Evento cuja credencial está aberta no modal (ação "Credencial").
+  const [credentialEvent, setCredentialEvent] = useState(null);
+
+  // Depois de gerar/regenerar, a lista precisa refletir o e-mail e a nova
+  // validade. A senha não entra no estado da lista: ela vive só no modal.
+  function handleGateGenerated(eventId, gate) {
+    const { password: _password, ...summary } = gate;
+
+    setEvents((current) =>
+      current.map((e) => (e.id === eventId ? { ...e, gate: summary } : e)),
+    );
+    setCredentialEvent((current) =>
+      current && current.id === eventId ? { ...current, gate: summary } : current,
+    );
+  }
 
   const loadEvents = useCallback(async () => {
     setStatus('loading');
@@ -56,10 +75,14 @@ export default function OrganizerDashboard() {
   async function handlePublish(eventId) {
     setPublishingId(eventId);
     setActionError('');
+    setNewGate(null);
 
     try {
       const updated = await api.post(`/events/${eventId}/publish`);
       setEvents((current) => current.map((e) => (e.id === eventId ? updated : e)));
+
+      // A senha vem apenas nesta resposta, no momento em que a credencial nasce.
+      if (updated.gate?.password) setNewGate(updated.gate);
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -76,6 +99,14 @@ export default function OrganizerDashboard() {
 
   return (
     <div className="bg-[#F7F7F7] flex-1">
+      {credentialEvent && (
+        <GateCredentialModal
+          event={credentialEvent}
+          onClose={() => setCredentialEvent(null)}
+          onGenerated={handleGateGenerated}
+        />
+      )}
+
       <div className="max-w-[1280px] mx-auto px-6 py-8 flex flex-col gap-8">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
@@ -111,6 +142,8 @@ export default function OrganizerDashboard() {
         )}
 
         {actionError && <Alert type="error" message={actionError} />}
+
+        {newGate && <GateCredentialCard gate={newGate} />}
 
         {status === 'loading' && (
           <div className="bg-white border border-[#E0E0E0] rounded-[6px] divide-y divide-[#E0E0E0]">
@@ -224,16 +257,19 @@ export default function OrganizerDashboard() {
                     </Badge>
 
                     <div className="flex items-center gap-2 shrink-0">
+                      {/* PATCH /events/:id já existe e funciona, mas a tela de
+                          edição não foi desenhada nem faz parte da tarefa 72.
+                          Fica desabilitado em vez de abrir uma tela inventada. */}
                       <Button
                         variant="ghost"
                         size="sm"
                         disabled
-                        title="A edição de eventos chega em uma etapa futura"
+                        title="A tela de edição de evento não faz parte desta entrega"
                       >
                         <IconEdit />
                         Editar
                       </Button>
-                      {isDraft && (
+                      {isDraft ? (
                         <Button
                           variant="outline"
                           size="sm"
@@ -242,6 +278,15 @@ export default function OrganizerDashboard() {
                         >
                           <IconEye />
                           Publicar
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCredentialEvent(event)}
+                        >
+                          <IconKey />
+                          Credencial
                         </Button>
                       )}
                     </div>

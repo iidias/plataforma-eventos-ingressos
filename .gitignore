@@ -1,4 +1,3 @@
-```gitignore
 node_modules/
 dist/
 build/
@@ -6,10 +5,11 @@ build/
 .env.*
 !.env.example
 *TAREFAS-ELITE-DEV*
+codigo telas figma/
+codigos telas figma/
 *.log
 .DS_Store
 .agents/
 .claude/
 .windsurf/
 skills-lock.json
-```
