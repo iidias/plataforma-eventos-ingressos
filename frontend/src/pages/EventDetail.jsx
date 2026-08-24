@@ -1,9 +1,11 @@
-// Detalhe do evento (tarefa 71).
+// Detalhe do evento (tarefa 71) e criação da reserva (tarefas 78 e 79).
 // Consome GET /events/:id, calcula o total em tempo real e limita a quantidade
 // a 5 ingressos (e nunca acima dos lugares disponíveis).
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api/client.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import Alert from '../components/Alert.jsx';
 import Button from '../components/Button.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Skeleton from '../components/Skeleton.jsx';
@@ -14,11 +16,17 @@ const MAX_TICKETS = 5;
 
 export default function EventDetail() {
   const { id } = useParams();
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [event, setEvent] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ready | error
   const [error, setError] = useState('');
   const [notFound, setNotFound] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [reserving, setReserving] = useState(false);
+  const [reserveError, setReserveError] = useState('');
 
   const loadEvent = useCallback(async () => {
     setStatus('loading');
@@ -40,6 +48,54 @@ export default function EventDetail() {
   useEffect(() => {
     loadEvent();
   }, [loadEvent]);
+
+  // Recarrega a disponibilidade sem voltar a tela para o esqueleto: usado
+  // depois de um 409, quando o número exibido já não corresponde ao servidor.
+  // A quantidade escolhida é reduzida se não couber mais.
+  const refreshAvailability = useCallback(async () => {
+    try {
+      const data = await api.get(`/events/${id}`, { auth: false });
+      setEvent(data);
+      setQuantity((current) => Math.max(1, Math.min(current, data.available)));
+    } catch {
+      // Falhar aqui não pode apagar a mensagem do 409, que é a informação
+      // que importa. A tela continua com o número anterior.
+    }
+  }, [id]);
+
+  async function handleReserve() {
+    // Visitante deslogado: manda para o login e volta para cá depois, mesmo
+    // padrão que o ProtectedRoute usa nas rotas privadas.
+    if (!isAuthenticated) {
+      return navigate('/login', { state: { from: location } });
+    }
+
+    setReserving(true);
+    setReserveError('');
+
+    try {
+      const reservation = await api.post('/reservations', { eventId: id, quantity });
+
+      navigate(`/checkout/${reservation.id}`);
+    } catch (err) {
+      if (err.status === 409) {
+        // Lotação estourou entre carregar a tela e clicar. A mensagem do
+        // backend é genérica; aqui ela vira uma frase para quem está comprando.
+        setReserveError('Não há lugares suficientes para esta reserva.');
+        await refreshAvailability();
+      } else if (err.status === 401) {
+        navigate('/login', { state: { from: location } });
+      } else if (err.status === 403) {
+        // Organizador ou portaria logado: o backend recusa com "Acesso negado",
+        // que não diz nada para quem está tentando comprar.
+        setReserveError('Apenas contas de cliente podem reservar ingressos.');
+      } else {
+        setReserveError(err.message);
+      }
+
+      setReserving(false);
+    }
+  }
 
   if (status === 'loading') {
     return (
@@ -146,6 +202,13 @@ export default function EventDetail() {
 
             <div className="h-px bg-[#E0E0E0]" />
 
+            {/* Fica fora do ramo esgotado/disponível de propósito: quando a
+                reserva falha por lotação, a tela recarrega a disponibilidade e
+                pode justamente virar "esgotado". Se o alerta morasse só no
+                ramo disponível, o cliente veria o número mudar sem nenhuma
+                explicação do motivo do clique não ter funcionado. */}
+            {reserveError && <Alert type="error" message={reserveError} />}
+
             {isSoldOut ? (
               <div className="flex flex-col gap-3">
                 <p className="font-[Outfit] text-[14px] text-[#E5181B] font-semibold">
@@ -216,9 +279,20 @@ export default function EventDetail() {
                   </span>
                 </div>
 
-                <Button size="lg" className="w-full">
-                  Reservar — {formatPrice(total)}
+                <Button
+                  size="lg"
+                  className="w-full"
+                  loading={reserving}
+                  onClick={handleReserve}
+                >
+                  {reserving ? 'Reservando...' : `Reservar — ${formatPrice(total)}`}
                 </Button>
+
+                {isAuthenticated && user?.role !== 'CUSTOMER' && (
+                  <p className="text-[12px] font-[Outfit] text-[#9A9A9A] text-center">
+                    Você está em uma conta de {user?.role === 'ORGANIZER' ? 'organizador' : 'portaria'}. Entre com uma conta de cliente para reservar.
+                  </p>
+                )}
               </>
             )}
           </div>

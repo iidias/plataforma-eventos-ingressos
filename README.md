@@ -17,7 +17,9 @@ A edição de evento existe na API (`PATCH /events/:id`), mas ainda não tem tel
 
 O cadastro padrão cria uma conta de cliente, com a opção de marcar "Sou organizador" para criar uma conta de organizador — o papel é decidido no servidor a partir dessa opção, nunca por um campo enviado pelo navegador. A mesma pessoa pode ter os dois acessos usando e-mails diferentes. Cada evento publicado tem um único usuário `GATE`, criado automaticamente com e-mail e senha gerados pelo sistema e vinculado somente àquele evento. O organizador abre a credencial pela ação "Credencial" na lista de eventos: o usuário fica sempre visível e a senha aparece só no momento em que é gerada ou regenerada, porque o banco guarda apenas o hash. Regenerar invalida na hora a senha anterior e as sessões abertas com ela. O acesso funciona antes e durante o evento e expira um dia depois do fim do dia do evento — o usuário não é apagado, para o histórico de validações continuar existindo.
 
-O que ainda falta: reserva, checkout com pagamento simulado, geração e compartilhamento dos ingressos e a tela da portaria.
+A reserva já funciona: o cliente escolhe a quantidade no detalhe do evento e a vaga é garantida no banco, dentro de uma transação, de forma que duas pessoas nunca levem o mesmo lugar.
+
+O que ainda falta: checkout com pagamento simulado, geração e compartilhamento dos ingressos e a tela da portaria.
 
 Stack que vou usar
 Front-end: React + Vite
