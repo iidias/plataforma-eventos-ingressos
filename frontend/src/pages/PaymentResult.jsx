@@ -1,4 +1,4 @@
-// Resultado do pagamento (tarefa 85).
+// Resultado do pagamento.
 // Wireframes: "checkout aprovado.png" e "checkout REPROVADO.png".
 // Não é uma rota própria: o checkout troca para esta tela depois da resposta
 // do backend, e também a mostra quando a reserva já foi processada antes

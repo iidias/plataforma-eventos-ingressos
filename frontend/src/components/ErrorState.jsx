@@ -1,4 +1,4 @@
-// ErrorState (tarefa 67): falha de carregamento, com ação de tentar de novo.
+// ErrorState: falha de carregamento, com ação de tentar de novo.
 import Button from './Button.jsx';
 
 export default function ErrorState({

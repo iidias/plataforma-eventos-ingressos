@@ -1,4 +1,4 @@
-// Página 404 (tarefa 74).
+// Página 404.
 import { Link } from 'react-router-dom';
 import Button from '../components/Button.jsx';
 import { useAuth } from '../context/AuthContext.jsx';

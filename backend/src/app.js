@@ -6,7 +6,9 @@ import authRoutes from './routes/authRoutes.js';
 import catalogRoutes from './routes/catalogRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import organizerRoutes from './routes/organizerRoutes.js';
+import publicRoutes from './routes/publicRoutes.js';
 import reservationRoutes from './routes/reservationRoutes.js';
+import ticketRoutes from './routes/ticketRoutes.js';
 
 const app = express();
 
@@ -17,6 +19,8 @@ app.use('/catalog', catalogRoutes);
 app.use('/events', eventRoutes);
 app.use('/organizer', organizerRoutes);
 app.use('/reservations', reservationRoutes);
+app.use('/tickets', ticketRoutes);
+app.use('/public', publicRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

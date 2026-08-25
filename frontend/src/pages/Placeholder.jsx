@@ -1,4 +1,4 @@
-// Placeholder temporário (tarefa 66): as telas reais são as tarefas 69–74.
+// Placeholder temporário: as telas reais ainda serão implementadas.
 // Serve apenas para o esqueleto de navegação existir e as rotas serem testáveis.
 export default function Placeholder({ title, taskHint }) {
   return (

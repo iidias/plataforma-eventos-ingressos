@@ -1,4 +1,4 @@
-// Cliente HTTP base do frontend (tarefa 63).
+// Cliente HTTP base do frontend.
 // Centraliza o fetch: monta a URL a partir de VITE_API_URL, envia o header
 // Authorization quando existe token e transforma respostas de erro do backend
 // em um Error consistente, para que todas as telas tratem erro do mesmo jeito.

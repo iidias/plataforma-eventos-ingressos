@@ -14,8 +14,7 @@ const createSchema = z.object({
   quantity: z
     .number('Informe a quantidade de ingressos')
     .int('A quantidade deve ser um número inteiro')
-    .min(1, 'Reserve pelo menos 1 ingresso')
-    .max(5, 'Máximo de 5 ingressos por compra'),
+    .min(1, 'Reserve pelo menos 1 ingresso'),
 });
 
 router.post('/', auth, requireRole('CUSTOMER'), async (req, res, next) => {

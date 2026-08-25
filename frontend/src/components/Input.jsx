@@ -1,4 +1,4 @@
-// Input (tarefa 67): campo de formulário base com label, erro e disabled.
+// Input: campo de formulário base com label, erro e disabled.
 import { useId } from 'react';
 
 export default function Input({

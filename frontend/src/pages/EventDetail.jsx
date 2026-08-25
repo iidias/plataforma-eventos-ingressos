@@ -1,6 +1,6 @@
-// Detalhe do evento (tarefa 71) e criação da reserva (tarefas 78 e 79).
+// Detalhe do evento e criação da reserva.
 // Consome GET /events/:id, calcula o total em tempo real e limita a quantidade
-// a 5 ingressos (e nunca acima dos lugares disponíveis).
+// aos lugares ainda disponíveis.
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api/client.js';
@@ -11,8 +11,6 @@ import ErrorState from '../components/ErrorState.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import { IconCalendar, IconLocation, IconFilm } from '../components/icons.jsx';
 import { availabilityOf, formatDate, formatTime, formatPrice } from '../lib/format.js';
-
-const MAX_TICKETS = 5;
 
 export default function EventDetail() {
   const { id } = useParams();
@@ -142,7 +140,7 @@ export default function EventDetail() {
 
   const availability = availabilityOf(event);
   const isSoldOut = availability.key === 'sold-out';
-  const maxQuantity = Math.min(MAX_TICKETS, Math.max(event.available, 1));
+  const maxQuantity = Math.max(event.available, 1);
   const total = quantity * event.priceCents;
 
   return (
@@ -266,9 +264,7 @@ export default function EventDetail() {
                     </button>
                   </div>
                   <p className="text-[11px] font-[Outfit] text-[#9A9A9A]">
-                    {event.available < MAX_TICKETS
-                      ? `Restam apenas ${event.available} ${event.available === 1 ? 'lugar' : 'lugares'}`
-                      : `Máximo de ${MAX_TICKETS} ingressos por compra`}
+                    {event.available} {event.available === 1 ? 'lugar disponível' : 'lugares disponíveis'}
                   </p>
                 </div>
 

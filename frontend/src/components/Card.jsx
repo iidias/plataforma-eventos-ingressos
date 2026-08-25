@@ -1,4 +1,4 @@
-// Card (tarefa 67): container base para conteúdo agrupado.
+// Card: container base para conteúdo agrupado.
 // Os cards específicos (evento, filme, dashboard) serão montados sobre este.
 export default function Card({
   as: Tag = 'div',

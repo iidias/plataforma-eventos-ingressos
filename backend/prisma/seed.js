@@ -2,7 +2,7 @@ import prisma from '../src/lib/prisma.js';
 import { hashPassword } from '../src/lib/password.js';
 import { gateExpiresAtFor } from '../src/lib/gateCredential.js';
 
-// Contas de teste exigidas pelo desafio (tarefa 42).
+// Contas de teste exigidas pelo desafio.
 // A portaria NÃO entra aqui: ela depende do evento existir primeiro.
 const USERS = [
   { name: 'Organizador Teste', email: 'organizador@teste.com', password: 'senha123', role: 'ORGANIZER' },
@@ -19,7 +19,7 @@ const DEMO_GATE = {
   password: 'senha123',
 };
 
-// Dados do filme fixos de propósito (tarefa 56): assim o seed funciona
+// Dados do filme fixos de propósito: assim o seed funciona
 // mesmo que o TMDb esteja fora do ar.
 const EVENT = {
   externalId: '27205',

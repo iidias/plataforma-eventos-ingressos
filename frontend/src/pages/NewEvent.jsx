@@ -1,4 +1,4 @@
-// Criar evento em dois passos (tarefa 73).
+// Criar evento em dois passos.
 // Passo 1: busca no catálogo (GET /catalog/search).
 // Passo 2: formulário do evento (POST /events).
 import { useState } from 'react';

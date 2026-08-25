@@ -1,4 +1,4 @@
-// Painel do organizador (tarefa 72).
+// Painel do organizador.
 // Consome GET /organizer/events e permite publicar um rascunho via
 // POST /events/:id/publish. A edição completa pertence a uma etapa futura.
 import { useCallback, useEffect, useState } from 'react';
@@ -258,7 +258,7 @@ export default function OrganizerDashboard() {
 
                     <div className="flex items-center gap-2 shrink-0">
                       {/* PATCH /events/:id já existe e funciona, mas a tela de
-                          edição não foi desenhada nem faz parte da tarefa 72.
+                          edição não foi desenhada.
                           Fica desabilitado em vez de abrir uma tela inventada. */}
                       <Button
                         variant="ghost"

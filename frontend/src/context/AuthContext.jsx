@@ -1,6 +1,6 @@
-// AuthContext (tarefa 64): guarda token e usuário, persiste no localStorage e
+// AuthContext: guarda token e usuário, persiste no localStorage e
 // expõe login()/logout() para qualquer componente da árvore.
-// A tela de login em si é a tarefa 69 — aqui só existe a infraestrutura.
+// A tela de login em si fica à parte — aqui só existe a infraestrutura.
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { TOKEN_STORAGE_KEY } from '../api/client.js';

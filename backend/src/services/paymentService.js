@@ -1,6 +1,5 @@
-import { randomBytes, randomUUID } from 'node:crypto';
-import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma.js';
+import { createTicketsForReservation } from './ticketService.js';
 
 const REJECTION_REASON = 'Pagamento recusado pela operadora (simulado)';
 
@@ -14,38 +13,6 @@ function alreadyProcessed() {
   const error = new Error('Esta reserva já foi processada');
   error.status = 409;
   return error;
-}
-
-/**
- * Monta os dados de um ingresso.
- *
- * O `code` é um JWT assinado com TICKET_SECRET: é isso que impede o QR de ser
- * forjado. Qualquer um consegue ler o conteúdo, mas ninguém consegue produzir
- * um código válido sem o segredo, que só existe no servidor. Adulterou um
- * caractere, a verificação quebra.
- *
- * O `shareToken` é separado de propósito: o link de compartilhamento é público,
- * então não pode carregar o código que a portaria valida nem ser adivinhável.
- *
- * O id é gerado aqui, e não pelo banco, porque ele precisa estar dentro do
- * próprio código assinado.
- */
-function buildTicketData(reservation) {
-  if (!process.env.TICKET_SECRET) {
-    throw new Error('TICKET_SECRET não configurado');
-  }
-
-  const id = randomUUID();
-
-  return {
-    id,
-    reservationId: reservation.id,
-    eventId: reservation.eventId,
-    customerId: reservation.customerId,
-    code: jwt.sign({ tid: id, eid: reservation.eventId }, process.env.TICKET_SECRET),
-    shareToken: randomBytes(24).toString('hex'),
-    status: 'VALID',
-  };
 }
 
 /**
@@ -115,12 +82,7 @@ export async function processPayment(reservationId, customerId, outcome) {
       data: { reservationId, status: 'APPROVED' },
     });
 
-    // Um ingresso por unidade reservada: quantity 2 gera dois códigos.
-    const tickets = [];
-
-    for (let i = 0; i < reservation.quantity; i += 1) {
-      tickets.push(await tx.ticket.create({ data: buildTicketData(reservation) }));
-    }
+    const tickets = await createTicketsForReservation(tx, reservation);
 
     return {
       outcome: 'approved',

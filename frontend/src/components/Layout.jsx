@@ -1,4 +1,4 @@
-// Layout global (tarefa 74): header fixo + conteúdo da rota.
+// Layout global: header fixo + conteúdo da rota.
 import { Outlet } from 'react-router-dom';
 import Header from './Header.jsx';
 

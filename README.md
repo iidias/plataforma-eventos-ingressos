@@ -13,11 +13,11 @@ Back-end: banco modelado com Prisma, login com JWT e controle por papel, integra
 
 Front-end: base do projeto com Vite, Tailwind configurado com as cores e fontes do design, roteamento com React Router, cliente HTTP centralizado, contexto de autenticação e rotas protegidas por papel. As telas prontas são: login (com atalhos que preenchem as credenciais de teste), cadastro com a opção "Sou organizador", lista de eventos com busca, detalhe do evento com seletor de quantidade e total, painel do organizador com a credencial da portaria, criação de evento em dois passos (busca no catálogo e depois o formulário), além do layout com header e da página 404.
 
-A edição de evento existe na API (`PATCH /events/:id`), mas ainda não tem tela — o botão "Editar" no painel aparece desabilitado de propósito.
+A edição de evento existe na API (`PATCH /events/:id`), mas ainda não tem tela, o botão "Editar" no painel aparece desabilitado de propósito.
 
-O cadastro padrão cria uma conta de cliente, com a opção de marcar "Sou organizador" para criar uma conta de organizador — o papel é decidido no servidor a partir dessa opção, nunca por um campo enviado pelo navegador. A mesma pessoa pode ter os dois acessos usando e-mails diferentes. Cada evento publicado tem um único usuário `GATE`, criado automaticamente com e-mail e senha gerados pelo sistema e vinculado somente àquele evento. O organizador abre a credencial pela ação "Credencial" na lista de eventos: o usuário fica sempre visível e a senha aparece só no momento em que é gerada ou regenerada, porque o banco guarda apenas o hash. Regenerar invalida na hora a senha anterior e as sessões abertas com ela. O acesso funciona antes e durante o evento e expira um dia depois do fim do dia do evento — o usuário não é apagado, para o histórico de validações continuar existindo.
+O cadastro padrão cria uma conta de cliente, com a opção de marcar "Sou organizador" para criar uma conta de organizador, o papel é decidido no servidor a partir dessa opção, nunca por um campo enviado pelo navegador. A mesma pessoa pode ter os dois acessos usando e-mails diferentes. Cada evento publicado tem um único usuário `GATE`, criado automaticamente com e-mail e senha gerados pelo sistema e vinculado somente àquele evento. O organizador abre a credencial pela ação "Credencial" na lista de eventos: o usuário fica sempre visível e a senha aparece só no momento em que é gerada ou regenerada, porque o banco guarda apenas o hash. Regenerar invalida na hora a senha anterior e as sessões abertas com ela. O acesso funciona antes e durante o evento e expira um dia depois do fim do dia do evento, o usuário não é apagado, para o histórico de validações continuar existindo.
 
-A reserva e o pagamento simulado já funcionam de ponta a ponta: o cliente escolhe a quantidade no detalhe do evento e a vaga é garantida no banco, dentro de uma transação, de forma que duas pessoas nunca levem o mesmo lugar. No checkout há dois botões explícitos — "Simular aprovação" e "Simular recusa" — em vez de sorteio, para o avaliador conseguir percorrer os dois caminhos de propósito. Aprovado, a reserva vira paga e os ingressos são gerados com um código assinado. Recusado, a reserva é cancelada, nenhum ingresso nasce e os lugares voltam para a venda.
+A reserva e o pagamento simulado já funcionam de ponta a ponta: o cliente escolhe a quantidade no detalhe do evento e a vaga é garantida no banco, dentro de uma transação, de forma que duas pessoas nunca levem o mesmo lugar. No checkout há dois botões explícitos, "Simular aprovação" e "Simular recusa", em vez de sorteio, para o avaliador conseguir percorrer os dois caminhos de propósito. Aprovado, a reserva vira paga e os ingressos são gerados com um código assinado. Recusado, a reserva é cancelada, nenhum ingresso nasce e os lugares voltam para a venda.
 
 O que ainda falta: as telas de ingresso (Meus ingressos, detalhe com QR e link compartilhado) e a tela da portaria.
 
@@ -36,7 +36,7 @@ Uso de IA
 Estou usando IA (Claude) para me ajudar a planejar e organizar o projeto, já que é a primeira vez que faço um desafio desse tipo. Vou detalhar isso melhor em docs/AI_USAGE.md conforme o projeto avança.
 
 Como rodar o projeto
-Precisa de Node.js e de um PostgreSQL rodando. São dois terminais: um para o back-end e outro para o front-end.
+Precisa de Node.js (18 ou superior) e de um PostgreSQL (14 ou superior). Se ainda não tem o PostgreSQL, baixe em https://www.postgresql.org/download. Durante a instalação, anote a senha que definir para o usuário `postgres`. São dois terminais: um para o back-end e outro para o front-end.
 
 Back-end (sobe em http://localhost:3000):
 
@@ -45,15 +45,23 @@ cd backend
 npm install
 ```
 
-Copie o `.env.example` para `.env` e preencha `DATABASE_URL`, `JWT_SECRET`, `TICKET_SECRET` e `TMDB_API_KEY` (a chave do TMDb é gratuita e sai do site deles). Depois crie as tabelas e popule o banco:
+Copie o `.env.example` para `.env`. A `DATABASE_URL` segue o formato `postgresql://postgres:SUA_SENHA@localhost:5432/eventos` (troque `SUA_SENHA` pela senha que definiu na instalação do PostgreSQL). Para `JWT_SECRET` e `TICKET_SECRET`, gere duas strings aleatórias diferentes:
 
 ```bash
-npx prisma migrate dev
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
+A `TMDB_API_KEY` é gratuita e sai de https://www.themoviedb.org/settings/api (crie uma conta e peça uma chave de desenvolvedor).
+
+Crie o banco de dados, as tabelas e popule com dados de teste:
+
 ```bash
+psql -U postgres -c "CREATE DATABASE eventos;"
+npx prisma migrate dev
 npx prisma db seed
 ```
+
+Se o `psql` não for reconhecido no Windows, use o caminho completo: `"C:\Program Files\PostgreSQL\17\bin\psql.exe"` no lugar de `psql`.
 
 E então:
 

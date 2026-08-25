@@ -1,4 +1,4 @@
-// ProtectedRoute (tarefa 65): camada de navegação/UX do frontend.
+// ProtectedRoute: camada de navegação/UX do frontend.
 // A autorização de verdade continua no backend (middlewares auth/requireRole) —
 // qualquer pessoa consegue mexer no navegador, então isto NÃO é segurança.
 
@@ -28,7 +28,7 @@ export default function ProtectedRoute({ roles, children }) {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    // Guarda de onde veio para a tela de login poder voltar depois (tarefa 69).
+    // Guarda de onde veio para a tela de login poder voltar depois.
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

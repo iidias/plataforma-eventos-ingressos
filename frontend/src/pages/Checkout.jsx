@@ -1,4 +1,4 @@
-// Checkout (tarefa 84). Wireframe: "checkout.png".
+// Checkout. Wireframe: "checkout.png".
 // Formulário de cartão à esquerda (visual, nada é enviado nem armazenado),
 // resumo do pedido à direita e dois botões explícitos de simulação.
 import { useCallback, useEffect, useState } from 'react';

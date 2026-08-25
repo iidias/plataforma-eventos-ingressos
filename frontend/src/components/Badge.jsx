@@ -1,4 +1,4 @@
-// Badge (tarefa 67): informações curtas e status (disponibilidade, papel, etc.).
+// Badge: informações curtas e status (disponibilidade, papel, etc.).
 const colors = {
   red: 'bg-[#E5181B] text-white',
   black: 'bg-[#1A1A1A] text-white',

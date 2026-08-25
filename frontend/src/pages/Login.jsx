@@ -1,4 +1,4 @@
-// Tela de login (tarefa 69).
+// Tela de login.
 // Chama POST /auth/login pelo client HTTP, guarda a sessão no AuthContext e
 // redireciona conforme o papel do usuário.
 import { useState } from 'react';

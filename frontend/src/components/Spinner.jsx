@@ -1,4 +1,4 @@
-// Spinner (tarefa 67): indicador de carregamento do design system.
+// Spinner: indicador de carregamento do design system.
 export default function Spinner({ size = 16, className = '' }) {
   return (
     <svg

@@ -1,4 +1,4 @@
-// Lista de eventos (tarefa 70).
+// Lista de eventos.
 // Consome GET /events (rota pública) e trata os três estados exigidos:
 // carregando, vazio e erro.
 import { useCallback, useEffect, useMemo, useState } from 'react';

@@ -1,4 +1,4 @@
-// Card de evento da lista pública (tarefa 70).
+// Card de evento da lista pública.
 // Mostra pôster, título, data, local e preço — os quatro campos são exigidos
 // pela especificação — além do selo de disponibilidade.
 import { Link } from 'react-router-dom';

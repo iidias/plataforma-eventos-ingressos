@@ -1,4 +1,4 @@
-// Header global (tarefa 74): marca, navegação por papel, identificação do
+// Header global: marca, navegação por papel, identificação do
 // usuário logado (nome + papel) e botão de sair.
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';

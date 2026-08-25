@@ -1,4 +1,4 @@
-// Rotas da aplicação (tarefa 66), agora sob o layout global da tarefa 74.
+// Rotas da aplicação, agora sob o layout global.
 import { Routes, Route } from 'react-router-dom';
 
 import Layout from './components/Layout.jsx';

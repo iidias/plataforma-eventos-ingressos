@@ -1,4 +1,4 @@
-// Button (tarefa 67): variantes, tamanhos, disabled e loading do design system.
+// Button: variantes, tamanhos, disabled e loading do design system.
 import Spinner from './Spinner.jsx';
 
 const variants = {

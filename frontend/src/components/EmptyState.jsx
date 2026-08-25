@@ -1,4 +1,4 @@
-// EmptyState (tarefa 67): ausência de conteúdo.
+// EmptyState: ausência de conteúdo.
 export default function EmptyState({ title, message, description, action, className = '' }) {
   const heading = title ?? message ?? 'Nada por aqui';
 

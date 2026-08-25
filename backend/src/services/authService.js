@@ -97,8 +97,8 @@ export async function registerUser({ name, email, password, isOrganizer }) {
   };
 }
 
-// Usado pela rota GET /auth/me (tarefa 41): devolve o usuário logado,
-// identificado pelo "sub" que o middleware auth (tarefa 39) colocou em req.user.
+// Usado pela rota GET /auth/me: devolve o usuário logado,
+// identificado pelo "sub" que o middleware auth colocou em req.user.
 export async function getById(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
