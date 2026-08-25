@@ -1,6 +1,7 @@
 // QR do ingresso, com o código em texto logo abaixo.
 // Usado tanto na tela do cliente quanto na pública, sempre com value={code}:
-// é o código assinado que a portaria lê, nunca o shareToken.
+// é o mesmo código que a portaria digita quando a câmera não funciona, então
+// o QR carrega o código puro e não uma URL.
 //
 // Quando o ingresso já foi utilizado o QR fica esmaecido e recebe o carimbo
 // "UTILIZADO" por cima, para ninguém tentar apresentá-lo de novo na entrada.
@@ -23,7 +24,7 @@ export default function TicketQr({ code, used = false }) {
           </span>
         )}
       </div>
-      <p className="font-mono text-[11px] text-[#4A4A4A] text-center break-all leading-relaxed">
+      <p className="font-mono text-[13px] tracking-[0.15em] text-[#4A4A4A] text-center">
         {code}
       </p>
     </div>

@@ -1,5 +1,4 @@
-import { randomBytes, randomUUID } from 'node:crypto';
-import jwt from 'jsonwebtoken';
+import { randomBytes } from 'node:crypto';
 import prisma from '../lib/prisma.js';
 
 const eventSelect = { id: true, title: true, imageUrl: true, eventDate: true, venue: true };
@@ -9,39 +8,41 @@ const ticketInclude = {
   event: { select: eventSelect },
 };
 
+// Alfabeto sem I, L, O e U: ninguém confunde 1 com I nem 0 com O ao digitar o
+// código na portaria. São 8 caracteres sorteados entre 32, ou 40 bits. Como
+// 256 é múltiplo exato de 32, o resto da divisão não distorce o sorteio.
+const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
 function notFound() {
   const error = new Error('Ingresso não encontrado');
   error.status = 404;
   return error;
 }
 
+function generateCode() {
+  const chars = Array.from(randomBytes(8), (byte) => ALPHABET[byte % 32]);
+
+  return `IFM-${new Date().getFullYear()}-${chars.join('')}`;
+}
+
 /**
  * Monta os dados de um ingresso.
  *
- * O `code` é um JWT assinado com TICKET_SECRET: é isso que impede o QR de ser
- * forjado. Qualquer um consegue ler o conteúdo, mas ninguém consegue produzir
- * um código válido sem o segredo, que só existe no servidor. Adulterou um
- * caractere, a verificação quebra.
+ * O `code` é curto de propósito: ele precisa caber na digitação manual da
+ * portaria, que o PDF pede como alternativa à câmera. O que impede o QR de ser
+ * forjado é ele não ser adivinhável somado à conferência contra o banco — a
+ * portaria consulta o banco de qualquer jeito, porque "já utilizado" e "evento
+ * errado" são estado, e estado não cabe dentro do código (D17).
  *
- * O `shareToken` é separado de propósito: o link de compartilhamento é público,
- * então não pode carregar o código que a portaria valida nem ser adivinhável.
- *
- * O id é gerado aqui, e não pelo banco, porque ele precisa estar dentro do
- * próprio código assinado.
+ * O `shareToken` é separado: o link de compartilhamento é público, então não
+ * pode carregar o código que a portaria valida nem ser adivinhável.
  */
 function buildTicketData(reservation) {
-  if (!process.env.TICKET_SECRET) {
-    throw new Error('TICKET_SECRET não configurado');
-  }
-
-  const id = randomUUID();
-
   return {
-    id,
     reservationId: reservation.id,
     eventId: reservation.eventId,
     customerId: reservation.customerId,
-    code: jwt.sign({ tid: id, eid: reservation.eventId }, process.env.TICKET_SECRET),
+    code: generateCode(),
     shareToken: randomBytes(24).toString('hex'),
     status: 'VALID',
   };

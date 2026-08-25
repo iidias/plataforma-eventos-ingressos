@@ -1,4 +1,4 @@
-// Ícones do design system (docs/design/codigo telas figma/src/App.tsx).
+// Ícones do design system do figma.
 // Todos herdam a cor via currentColor.
 
 export const IconSearch = () => (

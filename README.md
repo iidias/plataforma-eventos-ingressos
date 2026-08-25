@@ -36,9 +36,9 @@ Uso de IA
 Estou usando IA (Claude) para me ajudar a planejar e organizar o projeto, já que é a primeira vez que faço um desafio desse tipo. Vou detalhar isso melhor em docs/AI_USAGE.md conforme o projeto avança.
 
 Como rodar o projeto
-Precisa de Node.js (18 ou superior) e de um banco PostgreSQL. São dois terminais: um para o back-end e outro para o front-end.
+Precisa de Node.js (18 ou superior). São dois terminais: um para o back-end e outro para o front-end.
 
-O banco tem duas opções. O projeto roda igual nas duas — o que muda é só a `DATABASE_URL` e se você precisa criar o banco na mão. A **opção A (Neon)** é a que usamos no desenvolvimento e a mesma que o deploy usa.
+O banco tem duas opções. O projeto roda igual nas duas, o que muda é só a `DATABASE_URL` e se você precisa criar o banco na mão. A **opção A (Neon)** é a que usamos no desenvolvimento e a mesma que o deploy usa.
 
 Back-end (sobe em http://localhost:3000):
 
@@ -75,7 +75,7 @@ DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/eventos"
 
 **As demais variáveis (valem para as duas opções)**
 
-Para `JWT_SECRET` e `TICKET_SECRET`, gere duas strings aleatórias diferentes:
+Para `JWT_SECRET`, gere uma string aleatória:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
