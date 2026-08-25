@@ -2,7 +2,7 @@
 // Consome GET /organizer/events e permite publicar um rascunho via
 // POST /events/:id/publish. A edição completa pertence a uma etapa futura.
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import Alert from '../components/Alert.jsx';
@@ -183,14 +183,6 @@ export default function OrganizerDashboard() {
             <EmptyState
               title="Você ainda não criou eventos"
               description="Comece buscando um filme no catálogo para montar sua primeira sessão."
-              action={
-                <Link to="/organizador/novo">
-                  <Button>
-                    <IconPlus />
-                    Novo evento
-                  </Button>
-                </Link>
-              }
             />
           </div>
         )}
