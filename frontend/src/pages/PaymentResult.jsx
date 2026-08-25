@@ -55,8 +55,8 @@ export default function PaymentResult({ approved, reservation }) {
             </Button>
           </Link>
           <Link to="/" className="w-full">
-            <Button variant="ghost" className="w-full">
-              Voltar à lista de eventos
+            <Button variant="outline" className="w-full">
+              Voltar ao início
             </Button>
           </Link>
         </div>

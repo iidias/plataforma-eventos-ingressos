@@ -11,7 +11,6 @@ import Button from '../components/Button.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Skeleton from '../components/Skeleton.jsx';
-import GateCredentialCard from '../components/GateCredentialCard.jsx';
 import GateCredentialModal from '../components/GateCredentialModal.jsx';
 import { IconCalendar, IconLocation, IconEdit, IconEye, IconKey, IconPlus, IconFilm } from '../components/icons.jsx';
 import { formatDateTime } from '../lib/format.js';
@@ -36,10 +35,12 @@ export default function OrganizerDashboard() {
   const [error, setError] = useState('');
   const [publishingId, setPublishingId] = useState(null);
   const [actionError, setActionError] = useState('');
-  // Credencial recém-gerada: só existe em memória, logo após a publicação.
-  const [newGate, setNewGate] = useState(null);
-  // Evento cuja credencial está aberta no modal (ação "Credencial").
+  // Evento cuja credencial está aberta no modal — pela ação "Credencial" ou
+  // logo depois de publicar.
   const [credentialEvent, setCredentialEvent] = useState(null);
+  // Senha recém-nascida na publicação: só existe em memória, e faz o modal
+  // abrir já revelado.
+  const [newPassword, setNewPassword] = useState('');
 
   // Depois de gerar/regenerar, a lista precisa refletir o e-mail e a nova
   // validade. A senha não entra no estado da lista: ela vive só no modal.
@@ -75,14 +76,18 @@ export default function OrganizerDashboard() {
   async function handlePublish(eventId) {
     setPublishingId(eventId);
     setActionError('');
-    setNewGate(null);
 
     try {
       const updated = await api.post(`/events/${eventId}/publish`);
       setEvents((current) => current.map((e) => (e.id === eventId ? updated : e)));
 
-      // A senha vem apenas nesta resposta, no momento em que a credencial nasce.
-      if (updated.gate?.password) setNewGate(updated.gate);
+      // A senha vem apenas nesta resposta, no momento em que a credencial
+      // nasce. O wireframe mostra a credencial num modal, não numa faixa
+      // acima da lista — então é o mesmo modal da ação "Credencial" que abre.
+      if (updated.gate?.password) {
+        setNewPassword(updated.gate.password);
+        setCredentialEvent(updated);
+      }
     } catch (err) {
       setActionError(err.message);
     } finally {
@@ -102,7 +107,11 @@ export default function OrganizerDashboard() {
       {credentialEvent && (
         <GateCredentialModal
           event={credentialEvent}
-          onClose={() => setCredentialEvent(null)}
+          initialPassword={newPassword}
+          onClose={() => {
+            setCredentialEvent(null);
+            setNewPassword('');
+          }}
           onGenerated={handleGateGenerated}
         />
       )}
@@ -142,8 +151,6 @@ export default function OrganizerDashboard() {
         )}
 
         {actionError && <Alert type="error" message={actionError} />}
-
-        {newGate && <GateCredentialCard gate={newGate} />}
 
         {status === 'loading' && (
           <div className="bg-white border border-[#E0E0E0] rounded-[6px] divide-y divide-[#E0E0E0]">
@@ -261,7 +268,7 @@ export default function OrganizerDashboard() {
                           edição não foi desenhada.
                           Fica desabilitado em vez de abrir uma tela inventada. */}
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         disabled
                         title="A tela de edição de evento não faz parte desta entrega"

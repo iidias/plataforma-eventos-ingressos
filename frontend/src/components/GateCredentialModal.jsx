@@ -15,8 +15,10 @@ import Button from './Button.jsx';
 import { CredField } from './GateCredentialCard.jsx';
 import { IconX } from './icons.jsx';
 
-export default function GateCredentialModal({ event, onClose, onGenerated }) {
-  const [password, setPassword] = useState('');
+// initialPassword chega quando a credencial acabou de nascer na publicação:
+// o modal já abre no estado revelado, sem precisar gerar nada.
+export default function GateCredentialModal({ event, onClose, onGenerated, initialPassword = '' }) {
+  const [password, setPassword] = useState(initialPassword);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
 

@@ -36,7 +36,9 @@ Uso de IA
 Estou usando IA (Claude) para me ajudar a planejar e organizar o projeto, já que é a primeira vez que faço um desafio desse tipo. Vou detalhar isso melhor em docs/AI_USAGE.md conforme o projeto avança.
 
 Como rodar o projeto
-Precisa de Node.js (18 ou superior) e de um PostgreSQL (14 ou superior). Se ainda não tem o PostgreSQL, baixe em https://www.postgresql.org/download. Durante a instalação, anote a senha que definir para o usuário `postgres`. São dois terminais: um para o back-end e outro para o front-end.
+Precisa de Node.js (18 ou superior) e de um banco PostgreSQL. São dois terminais: um para o back-end e outro para o front-end.
+
+O banco tem duas opções. O projeto roda igual nas duas — o que muda é só a `DATABASE_URL` e se você precisa criar o banco na mão. A **opção A (Neon)** é a que usamos no desenvolvimento e a mesma que o deploy usa.
 
 Back-end (sobe em http://localhost:3000):
 
@@ -45,7 +47,35 @@ cd backend
 npm install
 ```
 
-Copie o `.env.example` para `.env`. A `DATABASE_URL` segue o formato `postgresql://postgres:SUA_SENHA@localhost:5432/eventos` (troque `SUA_SENHA` pela senha que definiu na instalação do PostgreSQL). Para `JWT_SECRET` e `TICKET_SECRET`, gere duas strings aleatórias diferentes:
+Copie o `.env.example` para `.env` e preencha conforme a opção escolhida.
+
+**Opção A — Neon (PostgreSQL na nuvem, sem instalar nada)**
+
+Crie uma conta gratuita em https://neon.tech, clique em **New Project** e copie a **connection string** que aparece. Ela já vem com o banco `neondb` criado e tem este formato:
+
+```
+DATABASE_URL="postgresql://USUARIO:SENHA@ep-xxxx-pooler.REGIAO.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+```
+
+Cole exatamente como o Neon entregou, **sem tirar o `?sslmode=require&channel_binding=require`** — sem isso a conexão é recusada.
+
+**Opção B — PostgreSQL local**
+
+Baixe em https://www.postgresql.org/download e anote a senha que definir para o usuário `postgres` durante a instalação. Depois crie o banco:
+
+```bash
+psql -U postgres -c "CREATE DATABASE eventos;"
+```
+
+Se o `psql` não for reconhecido no Windows, use o caminho completo `"C:\Program Files\PostgreSQL\17\bin\psql.exe"` no lugar de `psql`. A `DATABASE_URL` fica assim (troque `SUA_SENHA`):
+
+```
+DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/eventos"
+```
+
+**As demais variáveis (valem para as duas opções)**
+
+Para `JWT_SECRET` e `TICKET_SECRET`, gere duas strings aleatórias diferentes:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
@@ -53,21 +83,24 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 A `TMDB_API_KEY` é gratuita e sai de https://www.themoviedb.org/settings/api (crie uma conta e peça uma chave de desenvolvedor).
 
-Crie o banco de dados, as tabelas e popule com dados de teste:
+`CORS_ORIGIN` e `APP_PUBLIC_URL` já vêm apontando para `http://localhost:5173` e só mudam no deploy. As duas guardam o endereço do **front-end**: a primeira diz quem pode chamar a API, e a segunda é a base dos links de compartilhamento de ingresso, que precisam abrir uma tela, não um JSON.
+
+**Criar as tabelas e popular com dados de teste**
 
 ```bash
-psql -U postgres -c "CREATE DATABASE eventos;"
 npx prisma migrate dev
 npx prisma db seed
 ```
 
-Se o `psql` não for reconhecido no Windows, use o caminho completo: `"C:\Program Files\PostgreSQL\17\bin\psql.exe"` no lugar de `psql`.
+O seed pode ser rodado quantas vezes quiser: ele usa `upsert` e não apaga nada que já exista.
 
 E então:
 
 ```bash
 npm run dev
 ```
+
+Se você escolheu o Neon, a primeira requisição depois de um tempo parado pode demorar de 15 a 30 segundos: o plano gratuito suspende o banco quando ele fica ocioso, e ele precisa acordar. Não é erro — da segunda em diante responde normal.
 
 Front-end (sobe em http://localhost:5173):
 

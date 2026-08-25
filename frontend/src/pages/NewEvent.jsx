@@ -151,22 +151,19 @@ export default function NewEvent() {
             <p className="font-[Outfit] text-[14px] text-[#4A4A4A] mt-1">
               {createdEvent.title}{' '}
               {createdEvent.status === 'PUBLISHED'
-                ? 'já está visível na lista pública.'
+                ? 'foi publicado e já está visível na lista.'
                 : 'foi salvo como rascunho e pode ser publicado depois.'}
             </p>
           </div>
-          <Button className="w-full" onClick={() => navigate('/organizador')}>
-            Voltar ao painel
+
+          {/* Publicando direto na criação, a credencial da portaria nasce
+              junto. A senha aparece só aqui, dentro do próprio card. */}
+          {createdEvent.gate?.password && <GateCredentialCard gate={createdEvent.gate} />}
+
+          <Button variant="outline" className="w-full" onClick={() => navigate('/organizador')}>
+            Voltar ao início
           </Button>
         </div>
-
-        {/* Publicando direto na criação, a credencial da portaria nasce junto.
-            A senha aparece só aqui. */}
-        {createdEvent.gate?.password && (
-          <div className="max-w-sm w-full">
-            <GateCredentialCard gate={createdEvent.gate} />
-          </div>
-        )}
       </div>
     );
   }
