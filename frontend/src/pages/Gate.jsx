@@ -157,7 +157,7 @@ export default function Gate() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1E1E1E] px-6 py-10">
+    <div className="min-h-screen bg-[#1E1E1E] px-6 py-10 pb-24">
       <div className="max-w-[672px] mx-auto">
         <p className="font-[Outfit] text-[11px] uppercase tracking-widest text-[#9A9A9A]">
           ingressoFilm

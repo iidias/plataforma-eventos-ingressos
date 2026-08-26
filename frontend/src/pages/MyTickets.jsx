@@ -57,6 +57,7 @@ function ReservationRow({ reservation }) {
         )}
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-1 min-w-0">
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
         <h2 className="font-[Outfit] font-semibold text-[18px] text-[#111111] leading-tight">
           {event.title}
@@ -71,18 +72,19 @@ function ReservationRow({ reservation }) {
         </span>
       </div>
 
-      <div className="flex flex-col items-end justify-between gap-2 shrink-0">
+      <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
         <Badge color={anyValid ? 'green' : 'gray'}>{anyValid ? 'Válido' : 'Utilizado'}</Badge>
-        <span className="font-[Outfit] text-[13px] text-[#9A9A9A]">
+        <span className="font-[Outfit] text-[13px] text-[#9A9A9A] whitespace-nowrap">
           {tickets.length} {tickets.length === 1 ? 'ingresso' : 'ingressos'}
         </span>
         <Link
           to={`/ingressos/${reservation.id}`}
-          className="font-[Outfit] text-[13px] text-[#4A4A4A] hover:text-[#111111] flex items-center gap-1"
+          className="font-[Outfit] text-[13px] text-[#4A4A4A] hover:text-[#111111] flex items-center gap-1 whitespace-nowrap"
         >
           Ver detalhes
           <IconChevronRight />
         </Link>
+      </div>
       </div>
     </article>
   );

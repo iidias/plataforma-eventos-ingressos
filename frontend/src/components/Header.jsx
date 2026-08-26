@@ -1,5 +1,7 @@
 // Header global: marca, navegação por papel, identificação do
 // usuário logado (nome + papel) e botão de sair.
+// No celular a navegação vira um menu recolhido.
+import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { homePathForRole } from '../routes/ProtectedRoute.jsx';
@@ -7,7 +9,7 @@ import { ROLE_LABELS, ROLE_BADGE_COLORS } from '../lib/format.js';
 import Badge from './Badge.jsx';
 import Button from './Button.jsx';
 import Logo from './Logo.jsx';
-import { IconUser, IconLogout } from './icons.jsx';
+import { IconUser, IconLogout, IconMenu, IconX } from './icons.jsx';
 
 const NAV_BY_ROLE = {
   CUSTOMER: [
@@ -29,8 +31,10 @@ const linkClass = ({ isActive }) =>
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
+    setMenuOpen(false);
     logout();
     navigate('/login', { replace: true });
   };
@@ -72,6 +76,15 @@ export default function Header() {
                 <IconLogout />
                 <span className="hidden sm:inline">Sair</span>
               </Button>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((open) => !open)}
+                aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
+                aria-expanded={menuOpen}
+                className="md:hidden w-8 h-8 flex items-center justify-center rounded-[4px] text-[#4A4A4A] hover:bg-[#F7F7F7]"
+              >
+                {menuOpen ? <IconX /> : <IconMenu />}
+              </button>
             </div>
           </>
         ) : (
@@ -81,6 +94,29 @@ export default function Header() {
           </Button>
         )}
       </div>
+
+      {isAuthenticated && menuOpen && (
+        <nav className="md:hidden border-t border-[#E0E0E0] px-6 py-4 flex flex-col gap-4">
+          <span className="flex items-center gap-2">
+            <span className="font-[Outfit] text-[13px] font-medium text-[#111111]">{user.name}</span>
+            <Badge color={ROLE_BADGE_COLORS[user.role] ?? 'gray'}>
+              {ROLE_LABELS[user.role] ?? user.role}
+            </Badge>
+          </span>
+
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={linkClass}
+              onClick={() => setMenuOpen(false)}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
