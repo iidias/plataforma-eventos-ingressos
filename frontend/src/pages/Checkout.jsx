@@ -17,10 +17,17 @@ import { formatDate, formatTime, formatPrice } from '../lib/format.js';
 // qualquer coisa não mostra o tratamento de erro que a tela precisa ter.
 function validateCard({ number, name, expiry, cvv }) {
   const errors = {};
+  const [month, year] = expiry.split('/').map(Number);
 
   if (number.replace(/\s/g, '').length < 16) errors.number = 'Número inválido';
   if (!name.trim()) errors.name = 'Nome obrigatório';
+
   if (expiry.length < 5) errors.expiry = 'Data inválida';
+  else if (month < 1 || month > 12) errors.expiry = 'Mês inválido';
+  // Mês do Date começa em zero, então new Date(2026, 12) é 1º de janeiro de 2027:
+  // o cartão vale até o último dia do mês impresso.
+  else if (new Date(2000 + year, month) <= new Date()) errors.expiry = 'Cartão vencido';
+
   if (cvv.length < 3) errors.cvv = 'CVV inválido';
 
   return errors;
