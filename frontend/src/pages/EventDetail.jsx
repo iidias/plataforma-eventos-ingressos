@@ -72,7 +72,7 @@ export default function EventDetail() {
     setReserveError('');
 
     try {
-      const reservation = await api.post('/reservations', { eventId: id, quantity });
+      const reservation = await api.post('/reservations', { eventId: id, quantity: Number(quantity) });
 
       navigate(`/checkout/${reservation.id}`);
     } catch (err) {
@@ -141,7 +141,10 @@ export default function EventDetail() {
   const availability = availabilityOf(event);
   const isSoldOut = availability.key === 'sold-out';
   const maxQuantity = Math.max(event.available, 1);
-  const total = quantity * event.priceCents;
+  const quantidade = Number(quantity) || 0;
+  const acimaDoMaximo = quantidade > maxQuantity;
+  const quantidadeValida = quantidade >= 1 && !acimaDoMaximo;
+  const total = quantidade * event.priceCents;
 
   return (
     <div className="bg-white flex-1">
@@ -241,30 +244,35 @@ export default function EventDetail() {
                     <button
                       type="button"
                       aria-label="Diminuir quantidade"
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      disabled={quantity <= 1}
+                      onClick={() => setQuantity(Math.max(1, quantidade - 1))}
+                      disabled={quantidade <= 1}
                       className="w-10 h-10 flex items-center justify-center font-[Outfit] text-[18px] text-[#111111] hover:bg-[#F7F7F7] transition-colors border-r border-[#E0E0E0] cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       –
                     </button>
-                    <span
-                      aria-live="polite"
-                      className="w-12 h-10 flex items-center justify-center font-[Outfit] font-semibold text-[16px] text-[#111111]"
-                    >
-                      {quantity}
-                    </span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      aria-label="Quantidade de ingressos"
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ''))}
+                      onBlur={() => quantidade < 1 && setQuantity(1)}
+                      className="w-14 h-10 text-center font-[Outfit] font-semibold text-[16px] text-[#111111] focus:outline-none"
+                    />
                     <button
                       type="button"
                       aria-label="Aumentar quantidade"
-                      onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
-                      disabled={quantity >= maxQuantity}
+                      onClick={() => setQuantity(Math.min(maxQuantity, quantidade + 1))}
+                      disabled={quantidade >= maxQuantity}
                       className="w-10 h-10 flex items-center justify-center font-[Outfit] text-[18px] text-[#111111] hover:bg-[#F7F7F7] transition-colors border-l border-[#E0E0E0] cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       +
                     </button>
                   </div>
-                  <p className="text-[11px] font-[Outfit] text-[#9A9A9A]">
-                    {event.available} {event.available === 1 ? 'lugar disponível' : 'lugares disponíveis'}
+                  <p className={`text-[11px] font-[Outfit] ${acimaDoMaximo ? 'text-[#E5181B]' : 'text-[#9A9A9A]'}`}>
+                    {acimaDoMaximo
+                      ? `Máximo de ${maxQuantity} ${maxQuantity === 1 ? 'ingresso' : 'ingressos'}`
+                      : `${event.available} ${event.available === 1 ? 'lugar disponível' : 'lugares disponíveis'}`}
                   </p>
                 </div>
 
@@ -279,6 +287,7 @@ export default function EventDetail() {
                   size="lg"
                   className="w-full"
                   loading={reserving}
+                  disabled={!quantidadeValida}
                   onClick={handleReserve}
                 >
                   {reserving ? 'Reservando...' : `Reservar — ${formatPrice(total)}`}
