@@ -7,11 +7,11 @@ Toda pessoa que faz login é um `User`. Guarda nome, e-mail, senha (criptografad
 
 ## Credencial de portaria — acesso temporário do evento
 
-A portaria é um `User` com papel `GATE`, criado automaticamente quando o evento é **publicado** — rascunho não tem portaria, porque ainda não há ingresso para validar. Cada evento tem exatamente um usuário `GATE`, com e-mail e senha gerados pelo sistema, compartilhável entre as pessoas responsáveis pela entrada. Quem garante o "exatamente um" é o banco: a coluna `gateEventId` é `@unique`, então nem duas publicações simultâneas conseguem criar duas credenciais.
+A portaria é um `User` com papel `GATE`, criado automaticamente quando o evento é **publicado**, rascunho não tem portaria, porque ainda não há ingresso para validar. Cada evento tem exatamente um usuário `GATE`, com e-mail e senha gerados pelo sistema, compartilhável entre as pessoas responsáveis pela entrada. Quem garante o "exatamente um" é o banco: a coluna `gateEventId` é `@unique`, então nem duas publicações simultâneas conseguem criar duas credenciais.
 
-O organizador abre a credencial pela ação **Credencial** na lista de eventos. Ele vê sempre o **usuário**; a **senha** aparece só no instante em que é gerada ou regenerada, porque na tabela existe apenas o `passwordHash` — não há de onde ler a senha depois. Perdeu, gera outra. A regeneração invalida a senha anterior e também as sessões que já estavam abertas com ela.
+O organizador abre a credencial pela ação **Credencial** na lista de eventos. Ele vê sempre o **usuário**; a **senha** aparece só no instante em que é gerada ou regenerada, porque na tabela existe apenas o `passwordHash`, não há de onde ler a senha depois. Perdeu, gera outra. A regeneração invalida a senha anterior e também as sessões que já estavam abertas com ela.
 
-O usuário `GATE` funciona antes e durante o evento e expira um dia depois do fim do dia do evento (`gateExpiresAt`). Expirado, ele para de autenticar, mas **não é excluído**: apagar o usuário levaria junto o registro de quem validou cada ingresso (`Ticket.validatedById`), que é justamente o histórico que interessa guardar. Ao autenticar, a portaria só enxerga o evento associado — o evento vem do banco, nunca da requisição.
+O usuário `GATE` funciona antes e durante o evento e expira um dia depois do fim do dia do evento (`gateExpiresAt`). Expirado, ele para de autenticar, mas **não é excluído**: apagar o usuário levaria junto o registro de quem validou cada ingresso (`Ticket.validatedById`), que é justamente o histórico que interessa guardar. Ao autenticar, a portaria só enxerga o evento associado, o evento vem do banco, nunca da requisição.
 
 ## Event — o evento em si
 
@@ -27,13 +27,13 @@ Separei isso do ingresso porque nem toda reserva vira ingresso. Se o pagamento f
 
 ## Payment — o resultado do pagamento simulado
 
-Guarda só se aquela reserva foi aprovada ou recusada. Como o pagamento é simulado, não tem nada de dinheiro de verdade aqui — só o registro do resultado. Cada reserva tem um pagamento vinculado a ela.
+Guarda só se aquela reserva foi aprovada ou recusada. Como o pagamento é simulado, não tem nada de dinheiro de verdade aqui, só o registro do resultado. Cada reserva tem um pagamento vinculado a ela.
 
 ## Ticket — o ingresso que a pessoa recebe de verdade
 
 Só nasce depois que o pagamento é aprovado. Se a reserva foi de 2 ingressos, nascem 2 `Ticket`, cada um com seu próprio código.
 
-Cada ingresso tem: um `code` (o que vira o QR — precisa ser difícil de forjar), um `status` que começa `VALID` e vira `USED` quando é validado na portaria (é isso que impede usar o mesmo ingresso duas vezes), e um `shareToken` (o código usado só no link de compartilhamento — diferente do `code`, porque um é pra portaria ler e o outro é pra mandar pra alguém).
+Cada ingresso tem: um `code` (o que vira o QR precisa ser difícil de forjar), um `status` que começa `VALID` e vira `USED` quando é validado na portaria (é isso que impede usar o mesmo ingresso duas vezes), e um `shareToken` (o código usado só no link de compartilhamento, diferente do `code`, porque um é pra portaria ler e o outro é pra mandar pra alguém).
 
 ## Como as tabelas se conectam
 
@@ -44,4 +44,4 @@ reserva → Reservation (status PENDING)
 paga → Payment (aprovado ou recusado)
 gera → Ticket(s) (um por ingresso, cada um com seu QR)
 
-Um evento pode ter várias reservas, de clientes diferentes. Uma reserva gera um ou mais ingressos, dependendo da quantidade. E cada ingresso guarda de qual evento e de qual cliente ele é — é assim que a portaria confere se aquele ingresso é do evento certo.
+Um evento pode ter várias reservas, de clientes diferentes. Uma reserva gera um ou mais ingressos, dependendo da quantidade. E cada ingresso guarda de qual evento e de qual cliente ele é, é assim que a portaria confere se aquele ingresso é do evento certo.
