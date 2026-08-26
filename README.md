@@ -168,7 +168,7 @@ A credencial de portaria fixa é uma exceção de demonstração. Em eventos nor
 
 **TESTE 1 - Fluxo completo**
 
-1. Entre como organizador, clique em "Novo evento", busque um filme, preencha data, local, capacidade e preço, e publique. **Anote o usuário e a senha da portaria que aparecem ao publicar**, a senha só é mostrada nesse momento.
+1. Entre como organizador, clique em "Novo evento", busque um filme, preencha data, local, capacidade e preço, e publique. **Anote o usuário e a senha da portaria que aparecem ao publicar**, a senha só é mostrada nesse momento, mas caso esqueça o email é possível ver na aba meus eventos clicando no botão de credencial do evento desejado, por lá também será possível gerar uma nova senha, pois por questão de segurança não armazenamos ela.
 2. Saia e entre como cliente 1. Abra o evento recém-criado, escolha 2 ingressos e reserve.
 3. No checkout, clique em "Simular aprovação".
 4. Vá em "Meus ingressos": devem aparecer 2 ingressos, cada um com seu QR e seu código.
@@ -177,7 +177,7 @@ A credencial de portaria fixa é uma exceção de demonstração. Em eventos nor
 
 **TESTE 2 - Pagamento recusado**
 
-1. Anote os lugares disponíveis do evento na tela de detalhe.
+1. Anote a quantidade de ingressos disponíveis do evento na tela de detalhe.
 2. Entre como cliente 2, reserve 1 ingresso e clique em "Simular recusa".
 3. Confira: nenhum ingresso foi criado em "Meus ingressos" e a disponibilidade voltou ao valor anotado.
 
@@ -200,7 +200,11 @@ Para o último caso, use um dos ingressos gerados no TESTE 1, que são de outro 
 cd backend
 npm test
 ```
-
+OBS: necessário ter instalado o vitest. 
+```
+cd backend
+npm install vitest
+```
 Testes de integração cobrindo as regras que, se quebrarem, quebram o produto: reservar além da capacidade, pagamento recusado devolvendo a capacidade sem gerar ingresso, código inexistente recusado na portaria e o mesmo ingresso não sendo validado duas vezes.
 
 São testes de integração de propósito. As duas primeiras regras acontecem dentro do `UPDATE` do Postgres, então com o banco dublado eu estaria testando o dublê, não a regra.
