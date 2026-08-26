@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { getMovie } from './tmdbService.js';
+import { releaseExpiredReservations } from './reservationService.js';
 import { hashPassword } from '../lib/password.js';
 import {
   generateGateEmail,
@@ -95,6 +96,8 @@ export async function createEvent(organizerId, data) {
 }
 
 export async function listPublished() {
+  await releaseExpiredReservations(prisma);
+
   const events = await prisma.event.findMany({
     where: { status: 'PUBLISHED' },
     orderBy: { eventDate: 'asc' },
@@ -104,6 +107,8 @@ export async function listPublished() {
 }
 
 export async function getPublishedById(id) {
+  await releaseExpiredReservations(prisma);
+
   const event = await prisma.event.findUnique({ where: { id } });
 
   if (!event || event.status !== 'PUBLISHED') throw notFound();

@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { createTicketsForReservation } from './ticketService.js';
+import { releaseExpiredReservations } from './reservationService.js';
 
 const REJECTION_REASON = 'Pagamento recusado pela operadora (simulado)';
 
@@ -11,6 +12,12 @@ function notFound() {
 
 function alreadyProcessed() {
   const error = new Error('Esta reserva já foi processada');
+  error.status = 409;
+  return error;
+}
+
+function expired() {
+  const error = new Error('Sua reserva expirou e os lugares voltaram para a venda');
   error.status = 409;
   return error;
 }
@@ -40,6 +47,8 @@ function alreadyProcessed() {
  */
 export async function processPayment(reservationId, customerId, outcome) {
   return prisma.$transaction(async (tx) => {
+    await releaseExpiredReservations(tx);
+
     const reservation = await tx.reservation.findUnique({
       where: { id: reservationId },
       include: { event: { select: { id: true, title: true, eventDate: true, venue: true } } },
@@ -48,6 +57,7 @@ export async function processPayment(reservationId, customerId, outcome) {
     // Reserva de outro cliente é tratada como inexistente: quem não é dono
     // não descobre nem que ela existe.
     if (!reservation || reservation.customerId !== customerId) throw notFound();
+    if (reservation.status === 'EXPIRED') throw expired();
     if (reservation.status !== 'PENDING') throw alreadyProcessed();
 
     const novoStatus = outcome === 'approve' ? 'PAID' : 'REJECTED';

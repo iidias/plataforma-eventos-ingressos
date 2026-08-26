@@ -21,6 +21,7 @@ enum ReservationStatus {
   PENDING
   PAID
   REJECTED
+  EXPIRED
 }
 
 enum PaymentStatus {

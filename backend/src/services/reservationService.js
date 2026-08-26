@@ -12,6 +12,41 @@ function soldOut() {
   return error;
 }
 
+const TTL_MINUTOS = 2;
+
+/**
+ * Devolve ao estoque os lugares de reservas que ficaram paradas em PENDING.
+ *
+ * A reserva incrementa o soldCount no instante em que nasce (D18), o que
+ * impede a venda dupla mas segura o lugar de quem abandona o checkout. Sem
+ * isto, quem fecha a aba antes de pagar tira o ingresso da venda para sempre.
+ *
+ * A liberacao acontece por demanda, quando alguem consulta ou reserva o
+ * evento, em vez de num job separado: menos coisa para manter no ar.
+ */
+export async function releaseExpiredReservations(db) {
+  const limite = new Date(Date.now() - TTL_MINUTOS * 60 * 1000);
+
+  const expiradas = await db.reservation.findMany({
+    where: { status: 'PENDING', createdAt: { lt: limite } },
+    select: { id: true, eventId: true, quantity: true },
+  });
+
+  for (const reserva of expiradas) {
+    const soltou = await db.reservation.updateMany({
+      where: { id: reserva.id, status: 'PENDING' },
+      data: { status: 'EXPIRED' },
+    });
+
+    if (soltou.count === 1) {
+      await db.event.update({
+        where: { id: reserva.eventId },
+        data: { soldCount: { decrement: reserva.quantity } },
+      });
+    }
+  }
+}
+
 /**
  * Cria a reserva reservando os lugares no mesmo instante.
  *
@@ -36,6 +71,8 @@ function soldOut() {
  */
 export async function createReservation(customerId, { eventId, quantity }) {
   return prisma.$transaction(async (tx) => {
+    await releaseExpiredReservations(tx);
+
     const event = await tx.event.findUnique({ where: { id: eventId } });
 
     // Rascunho é tratado como inexistente, igual a GET /events/:id: quem não

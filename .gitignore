@@ -10,6 +10,5 @@ codigos telas figma/
 *.log
 .DS_Store
 .agents/
-.claude/
 .windsurf/
 skills-lock.json

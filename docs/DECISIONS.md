@@ -79,3 +79,8 @@ Por quê: se o front chamasse o TMDb direto, a chave apareceria no navegador de 
 
 D26 - Preço em centavos, como inteiro
 Float erra centavo. O backend guarda priceCents e a formatação em reais é só apresentação.
+
+D27 - A reserva pendente expira em 2 minutos e devolve os lugares
+A D18 incrementa o soldCount no instante em que a reserva nasce, e é isso que impede a venda dupla. Faltava a contrapartida: quem abandonava o checkout segurava o ingresso para sempre. Descobri testando o site publicado no celular: entrei na tela de pagamento, saí sem aprovar nem recusar, e a disponibilidade do evento tinha caído e não voltava. Reserva PENDING parada há mais de 2 minutos vira EXPIRED e os lugares voltam para a venda.
+Por que 2 minutos: é curto de propósito, para quem estiver avaliando conseguir ver a expiração acontecer sem esperar. Num sistema de verdade seriam 10 ou 15, que é o que ingresso.com e Eventim dão.
+O que descartei: liberar quando o cliente sai da tela. Fechar a aba, perder conexão ou o celular matar o app em segundo plano nunca dispararia a liberação, e é justamente aí que o abandono acontece.

@@ -64,6 +64,12 @@ export default function Checkout() {
     try {
       const data = await api.get(`/reservations/${reservationId}`);
 
+      if (data.status === 'EXPIRED') {
+        setError('Sua reserva expirou e os lugares voltaram para a venda. Reserve de novo.');
+        setStatus('error');
+        return;
+      }
+
       // Reserva já processada (recarregou a página, voltou pelo histórico):
       // mostra o resultado que ela já tem, em vez de deixar pagar de novo.
       if (data.status !== 'PENDING') {
@@ -223,7 +229,8 @@ export default function Checkout() {
             <span className="flex items-center gap-1.5 text-[#9A9A9A]">
               <IconShield />
               <span className="font-[Outfit] text-[12px]">
-                Pagamento simulado — os dados do cartão não saem desta tela
+                Pagamento simulado — os dados do cartão não saem desta tela.
+                Os lugares ficam reservados por 2 minutos.
               </span>
             </span>
 

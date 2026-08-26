@@ -12,6 +12,7 @@ Deploy: ainda não publicado.
 - Lista de filmes em cartaz com busca por título ou local, mostrando data, local, preço e disponibilidade
 - Detalhe do evento com seletor de quantidade e total calculado na hora
 - Reserva com garantia de que o mesmo lugar não é vendido duas vezes
+- A reserva expira em 2 minutos, valor reduzido para facilitar a avaliação; em produção seriam 10 a 15
 - Checkout simulado com dois botões explícitos: "Simular aprovação" e "Simular recusa"
 - "Meus ingressos", com um QR e um código próprios por ingresso
 - Link público de compartilhamento, que abre o ingresso sem login e sem expor quem comprou
@@ -199,7 +200,7 @@ cd backend
 npm test
 ```
 
-Quatro testes de integração cobrindo as regras que, se quebrarem, quebram o produto: reservar além da capacidade, pagamento recusado devolvendo a capacidade sem gerar ingresso, código inexistente recusado na portaria e o mesmo ingresso não sendo validado duas vezes.
+Testes de integração cobrindo as regras que, se quebrarem, quebram o produto: reservar além da capacidade, pagamento recusado devolvendo a capacidade sem gerar ingresso, código inexistente recusado na portaria e o mesmo ingresso não sendo validado duas vezes.
 
 São testes de integração de propósito. As duas primeiras regras acontecem dentro do `UPDATE` do Postgres, então com o banco dublado eu estaria testando o dublê, não a regra.
 
