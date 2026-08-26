@@ -4,7 +4,6 @@ build/
 .env
 .env.*
 !.env.example
-*TAREFAS-ELITE-DEV*
 codigo telas figma/
 *.log
 .DS_Store
