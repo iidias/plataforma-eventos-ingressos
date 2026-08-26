@@ -6,9 +6,6 @@ build/
 !.env.example
 *TAREFAS-ELITE-DEV*
 codigo telas figma/
-codigos telas figma/
 *.log
 .DS_Store
-.agents/
-.windsurf/
 skills-lock.json
