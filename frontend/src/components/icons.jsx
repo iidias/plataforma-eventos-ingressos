@@ -190,3 +190,17 @@ export const IconLink = () => (
     <path d="M8.2 5.8a2.5 2.5 0 00-3.7-.3L2.8 7.2a2.5 2.5 0 003.5 3.5l1-1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
   </svg>
 );
+
+export const IconClock = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M9 5v4.2l2.6 1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+export const IconCamera = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M1.5 5.5a1 1 0 011-1h1.7l1-1.5h3.6l1 1.5h1.7a1 1 0 011 1v6a1 1 0 01-1 1h-9a1 1 0 01-1-1v-6z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+    <circle cx="8" cy="8.5" r="2.3" stroke="currentColor" strokeWidth="1.3" />
+  </svg>
+);

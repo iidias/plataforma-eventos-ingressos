@@ -1,6 +1,3 @@
-// Meus Ingressos.
-// Wireframe: "meus ingressos.png" — uma linha por reserva paga.
-//
 // A rota GET /tickets/me devolve ingresso por ingresso, porque é assim que o
 // modelo funciona (D21). Esta tela é a única que agrupa: o cliente comprou uma
 // vez, então vê uma linha, e os QRs individuais ficam no detalhe.

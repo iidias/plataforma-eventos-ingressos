@@ -25,18 +25,7 @@ function generateCode() {
   return `IFM-${new Date().getFullYear()}-${chars.join('')}`;
 }
 
-/**
- * Monta os dados de um ingresso.
- *
- * O `code` é curto de propósito: ele precisa caber na digitação manual da
- * portaria, que o PDF pede como alternativa à câmera. O que impede o QR de ser
- * forjado é ele não ser adivinhável somado à conferência contra o banco — a
- * portaria consulta o banco de qualquer jeito, porque "já utilizado" e "evento
- * errado" são estado, e estado não cabe dentro do código (D17).
- *
- * O `shareToken` é separado: o link de compartilhamento é público, então não
- * pode carregar o código que a portaria valida nem ser adivinhável.
- */
+// Monta os dados de um ingresso.
 function buildTicketData(reservation) {
   return {
     reservationId: reservation.id,
@@ -90,12 +79,7 @@ export async function buildShareUrl(id, customerId) {
   return { shareUrl: `${base}/i/${ticket.shareToken}` };
 }
 
-/**
- * Visão pública do ingresso, aberta por qualquer um que tenha o link.
- *
- * O select é a parte que importa: nada de e-mail, nome ou id do dono. Quem
- * recebeu o link vê o ingresso, não a pessoa que comprou.
- */
+// Visão pública do ingresso, aberta por qualquer um que tenha o link.
 export async function getPublicTicket(shareToken) {
   const ticket = await prisma.ticket.findUnique({
     where: { shareToken },

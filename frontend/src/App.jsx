@@ -1,4 +1,3 @@
-// Rotas da aplicação, agora sob o layout global.
 import { Routes, Route } from 'react-router-dom';
 
 import Layout from './components/Layout.jsx';
@@ -24,6 +23,11 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Register />} />
 
+      {/* A portaria tem tela cheia escura e o proprio botao de sair, sem o header global. */}
+      <Route element={<ProtectedRoute roles={['GATE']} />}>
+        <Route path="/portaria" element={<Gate />} />
+      </Route>
+
       <Route element={<Layout />}>
         {/* Públicas — acompanham o backend, onde GET /events e GET /events/:id
             não exigem autenticação, e o link compartilhado é público por natureza. */}
@@ -42,11 +46,6 @@ export default function App() {
         <Route element={<ProtectedRoute roles={['ORGANIZER']} />}>
           <Route path="/organizador" element={<OrganizerDashboard />} />
           <Route path="/organizador/novo" element={<NewEvent />} />
-        </Route>
-
-        {/* Portaria */}
-        <Route element={<ProtectedRoute roles={['GATE']} />}>
-          <Route path="/portaria" element={<Gate />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
