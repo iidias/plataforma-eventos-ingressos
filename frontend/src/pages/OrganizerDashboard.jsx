@@ -1,6 +1,6 @@
 // Painel do organizador.
-// Consome GET /organizer/events e permite publicar um rascunho via
-// POST /events/:id/publish. A edição completa pertence a uma etapa futura.
+// Consome GET /organizer/events, publica rascunho via POST /events/:id/publish
+// e edita capacidade e preço via PATCH /events/:id.
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
@@ -12,6 +12,7 @@ import EmptyState from '../components/EmptyState.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import GateCredentialModal from '../components/GateCredentialModal.jsx';
+import EditEventModal from '../components/EditEventModal.jsx';
 import { IconCalendar, IconLocation, IconEdit, IconEye, IconKey, IconPlus, IconFilm } from '../components/icons.jsx';
 import { formatDateTime } from '../lib/format.js';
 
@@ -38,6 +39,7 @@ export default function OrganizerDashboard() {
   // Evento cuja credencial está aberta no modal — pela ação "Credencial" ou
   // logo depois de publicar.
   const [credentialEvent, setCredentialEvent] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
   // Senha recém-nascida na publicação: só existe em memória, e faz o modal
   // abrir já revelado.
   const [newPassword, setNewPassword] = useState('');
@@ -113,6 +115,17 @@ export default function OrganizerDashboard() {
             setNewPassword('');
           }}
           onGenerated={handleGateGenerated}
+        />
+      )}
+
+      {editingEvent && (
+        <EditEventModal
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+          onSaved={(updated) => {
+            setEvents((current) => current.map((e) => (e.id === updated.id ? updated : e)));
+            setEditingEvent(null);
+          }}
         />
       )}
 
@@ -256,14 +269,10 @@ export default function OrganizerDashboard() {
                     </Badge>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      {/* PATCH /events/:id já existe e funciona, mas a tela de
-                          edição não foi desenhada.
-                          Fica desabilitado em vez de abrir uma tela inventada. */}
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled
-                        title="A tela de edição de evento não faz parte desta entrega"
+                        onClick={() => setEditingEvent(event)}
                       >
                         <IconEdit />
                         Editar

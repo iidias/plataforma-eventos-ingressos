@@ -46,8 +46,12 @@ Havia uma tensão aqui: "o organizador vê a credencial do evento" contra "a sen
 D16 - Regenerar a senha derruba também as sessões já abertas.
 Invalidar só a senha resolvia metade do problema: quem já estava logado na portaria continuaria validando ingressos por até 7 dias com a credencial que o organizador acabou de revogar, inútil justamente no caso que motiva a regeneração (alguém da equipe saiu). O token do `GATE` carrega uma impressão digital derivada do hash da senha, e o middleware compara com a do banco a cada requisição. Senha regenerada, impressão muda, sessão antiga cai com 401. Só o `GATE` paga esse custo: é o único papel cuja credencial é revogável pelo organizador, e é o único que já consultava o banco a cada requisição por causa da validade.
 
-D17 - Edição de evento fica sem tela nesta entrega.
-`PATCH /events/:id` existe, valida dono e impede capacidade menor que o já vendido. Mas não desenhei tela de edição e ela não faz parte do escopo desta etapa, então o botão "Editar" fica desabilitado. 
+A edição de evento cobre só capacidade e preço
+
+São os dois campos que o organizador precisa mexer depois que o evento está no ar: abrir mais lugares ou corrigir o preço. Data, local e filme ficam de fora de propósito, quem já comprou escolheu com base neles, e mudar depois faria o ingresso valer para um evento diferente do que foi vendido.
+A capacidade tem uma trava: não pode ficar abaixo dos ingressos já vendidos, senão existiriam mais ingressos que lugares. A regra mora no backend, no `updateEvent`; o modal repete a mesma checagem só para o erro aparecer no campo sem ida ao servidor. Se as duas discordarem, quem vale é a do banco.
+O que descartei: edição livre de todos os campos, que é o que o `PATCH /events/:id` aceitaria. A rota continua aceitando data e local, mas a tela não oferece.
+Esta decisão substitui a versão anterior, que dizia que a edição ficaria sem tela nesta entrega. A tela entrou depois, com escopo reduzido 
 
 D18 - A disponibilidade é verificada dentro do UPDATE, não em JavaScript.
 Esta é a regra mais difícil do desafio: o mesmo lugar não pode ser vendido duas vezes. "Ler o soldCount, ver se cabe, depois gravar" não resolve, porque entre a leitura e a escrita cabe outra requisição — as duas passam pelo `if` antes de qualquer uma gravar. Então a condição não fica no meu código: ela vai para dentro do `WHERE` do próprio `UPDATE` (`soldCount <= capacity - quantity`), e quem decide é o Postgres. O `updateMany` devolve quantas linhas casaram; se duas requisições chegam juntas, uma recebe `count === 0` e vira 409. Tudo dentro de `$transaction`, então uma falha ao criar a reserva desfaz o incremento junto — nunca sobra lugar vendido sem reserva. Prendo também `capacity` e `status` no mesmo `WHERE`: o Prisma não compara duas colunas, então o limite precisa usar o `capacity` que foi lido, e travá-lo garante que ele ainda vale na hora da escrita.

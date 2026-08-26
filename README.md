@@ -23,6 +23,7 @@ Deploy: ainda não publicado.
 - Painel com vendidos/capacidade e status de cada evento
 - Publicação do evento, que gera automaticamente a credencial da portaria
 - Ação "Credencial" para consultar o usuário da portaria e regenerar a senha
+- Edição de capacidade e preço do evento, com a capacidade travada no total já vendido
 
 **Portaria**
 - Tela própria, com leitura do QR pela câmera e digitação do código como alternativa
@@ -131,7 +132,7 @@ E então:
 npm run dev
 ```
 
-Se você escolheu o Neon, a primeira requisição depois de um tempo parado pode demorar de 15 a 30 segundos: o plano gratuito suspende o banco quando ele fica ocioso, e ele precisa acordar. Não é erro - da segunda em diante responde normal.
+Se você escolheu o Neon, a primeira requisição depois de um tempo parado pode demorar de 15 a 30 segundos: o plano gratuito suspende o banco quando ele fica ocioso, e ele precisa acordar. Não é erro, da segunda em diante responde normal.
 
 ### 3. Front-end (sobe em http://localhost:5173)
 
@@ -211,11 +212,10 @@ Estão em [docs/DECISIONS.md](docs/DECISIONS.md), no formato decisão / por quê
 ## Limitações e problemas conhecidos
 
 - **A leitura do QR pela câmera exige contexto seguro.** Funciona em `localhost` e em HTTPS. Em rede local por IP (`http://192.168...`) o navegador bloqueia a câmera. A digitação do código cobre o requisito em qualquer cenário.
-- **Os três papéis dividem o mesmo `localStorage`.** Entrar com um papel encerra a sessão do outro na mesma janela do navegador. Para percorrer dois papéis ao mesmo tempo, use uma janela anônima para o segundo. A tela da portaria foi endurecida contra isso enquanto a aba fica aberta, mas um F5 depois de trocar de conta cai na mesma limitação.
-- **A edição de evento não tem tela.** `PATCH /events/:id` existe, valida dono e impede capacidade menor que o já vendido, mas o botão "Editar" no painel está desabilitado de propósito.
+- **Os três papéis dividem o mesmo `localStorage`.** Entrar com um papel encerra a sessão do outro na mesma janela do navegador. Para percorrer dois papéis ao mesmo tempo, use uma janela anônima para o segundo. A tela da portaria foi endurecida contra isso enquanto a aba fica aberta; depois de um F5, porém, ela lê o localStorage de novo e o navegador é levado para a tela do papel que está guardado ali. 
+- **A edição de evento cobre só capacidade e preço.** Data, local e filme não podem ser alterados depois que o evento existe, porque mudariam o que o cliente viu quando comprou.
 - **Os testes automatizados usam o mesmo banco do desenvolvimento.** Eles criam e apagam os próprios registros e não tocam no seed, mas o correto seria um banco separado só para testes.
 - **Não há cancelamento de ingresso nem devolução ao estoque depois do pagamento aprovado.** A capacidade só volta no caminho da recusa.
-- **O deploy não foi publicado.** As instruções locais acima são o caminho para avaliar o projeto.
 
 ## Uso de IA
 
