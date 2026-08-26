@@ -1,63 +1,69 @@
-# plataforma-eventos-ingressos
+# Plataforma de Eventos e Ingressos
 
 Projeto feito para o desafio técnico Elite Dev (Verzel).
 
-A ideia é simples: um organizador cria eventos a partir de um catálogo de filmes, define data, local, capacidade e preço. O cliente navega pelos eventos, reserva, paga (de forma simulada) e recebe um ingresso com QR Code, que também pode compartilhar por link. Na entrada, a portaria valida esse ingresso.
+Deploy: ainda não publicado.
 
-## Status do projeto
+> Um organizador cria eventos a partir de um catálogo de filmes, define data, local, capacidade e preço. O cliente navega pelos eventos, reserva, paga (de forma simulada) e recebe um ingresso com QR Code, que também pode compartilhar por link. Na entrada, a portaria valida esse ingresso.
 
-Em construção.
+## Funcionalidades
 
-### O que já está pronto
+**Cliente**
+- Lista de filmes em cartaz com busca por título ou local, mostrando data, local, preço e disponibilidade
+- Detalhe do evento com seletor de quantidade e total calculado na hora
+- Reserva com garantia de que o mesmo lugar não é vendido duas vezes
+- Checkout simulado com dois botões explícitos: "Simular aprovação" e "Simular recusa"
+- "Meus ingressos", com um QR e um código próprios por ingresso
+- Link público de compartilhamento, que abre o ingresso sem login e sem expor quem comprou
 
-Back-end: banco modelado com Prisma, login com JWT e controle por papel, integração com o catálogo do TMDb e o CRUD de eventos (criar, listar, editar e publicar). Tem seed com usuários de teste e um evento publicado.
+**Organizador**
+- Cadastro com a opção "Sou organizador"
+- Criação de evento em dois passos: busca no catálogo do TMDb e depois o formulário
+- Painel com vendidos/capacidade e status de cada evento
+- Publicação do evento, que gera automaticamente a credencial da portaria
+- Ação "Credencial" para consultar o usuário da portaria e regenerar a senha
 
-Front-end: base do projeto com Vite, Tailwind configurado com as cores e fontes do design, roteamento com React Router, cliente HTTP centralizado, contexto de autenticação e rotas protegidas por papel. As telas prontas são: login (com atalhos que preenchem as credenciais de teste), cadastro com a opção "Sou organizador", lista de eventos com busca, detalhe do evento com seletor de quantidade e total, painel do organizador com a credencial da portaria, criação de evento em dois passos (busca no catálogo e depois o formulário), além do layout com header e da página 404.
+**Portaria**
+- Tela própria, com leitura do QR pela câmera e digitação do código como alternativa
+- Quatro retornos distintos: válido, inválido, já utilizado e evento errado
+- Histórico das validações da sessão
+- Acesso limitado a um único evento e com validade que expira depois dele
 
-A edição de evento existe na API (`PATCH /events/:id`), mas ainda não tem tela, o botão "Editar" no painel aparece desabilitado de propósito.
+## Stack e por quê
 
-O cadastro padrão cria uma conta de cliente, com a opção de marcar "Sou organizador" para criar uma conta de organizador, o papel é decidido no servidor a partir dessa opção, nunca por um campo enviado pelo navegador. A mesma pessoa pode ter os dois acessos usando e-mails diferentes. Cada evento publicado tem um único usuário `GATE`, criado automaticamente com e-mail e senha gerados pelo sistema e vinculado somente àquele evento. O organizador abre a credencial pela ação "Credencial" na lista de eventos: o usuário fica sempre visível e a senha aparece só no momento em que é gerada ou regenerada, porque o banco guarda apenas o hash. Regenerar invalida na hora a senha anterior e as sessões abertas com ela. O acesso funciona antes e durante o evento e expira um dia depois do fim do dia do evento, o usuário não é apagado, para o histórico de validações continuar existindo.
+| Camada | Escolha |
+|---|---|
+| Front-end | React + Vite |
+| Back-end | Node.js + Express |
+| Banco de dados | PostgreSQL (Neon) |
+| ORM | Prisma |
+| Estilo | Tailwind CSS |
+| Testes | Vitest |
+| Catálogo externo | TMDb |
 
-A reserva e o pagamento simulado já funcionam de ponta a ponta: o cliente escolhe a quantidade no detalhe do evento e a vaga é garantida no banco, dentro de uma transação, de forma que duas pessoas nunca levem o mesmo lugar. No checkout há dois botões explícitos, "Simular aprovação" e "Simular recusa", em vez de sorteio, para o avaliador conseguir percorrer os dois caminhos de propósito. Aprovado, a reserva vira paga e os ingressos são gerados com um código curto e sorteado. Recusado, a reserva é cancelada, nenhum ingresso nasce e os lugares voltam para a venda.
+Escolhi essa combinação porque front e back ficam na mesma linguagem (JavaScript), o que facilita bastante já que estou construindo o projeto sozinho em pouco tempo. O raciocínio de cada escolha está em [docs/DECISIONS.md](docs/DECISIONS.md).
 
-As telas de ingresso também estão prontas: "Meus ingressos", o detalhe com um QR por ingresso e a tela pública do link compartilhado. E a portaria valida na entrada, por câmera ou digitação do código, com os quatro retornos que o desafio pede: válido, inválido, já utilizado e evento errado.
+## Arquitetura (resumo)
 
-### O que ainda falta
+O back-end separa rotas, services e middlewares. As rotas validam a entrada com Zod e não contêm regra de negócio; os services concentram as regras e são o que os testes exercitam; os middlewares cuidam de autenticação (`auth`) e de papel (`requireRole`).
 
-Testes automatizados, as seções de roteiro de teste e limitações conhecidas deste README, o `docs/AI_USAGE.md` e o deploy.
+São três papéis, todos na tabela `User`: `CUSTOMER`, `ORGANIZER` e `GATE`. A portaria não virou tabela própria, é um usuário com `role = GATE`, amarrado a um evento por `gateEventId` (`@unique`, o que garante uma credencial por evento) e com prazo em `gateExpiresAt`.
 
-## Stack que vou usar
+Duas regras dependem do banco, não do JavaScript: a disponibilidade de lugares e a marcação de ingresso usado. As duas colocam a condição dentro do `WHERE` do próprio `UPDATE`, porque um `if` no código não segura duas requisições simultâneas.
 
-Front-end: React + Vite
-Back-end: Node.js + Express
-Banco de dados: PostgreSQL
-ORM: Prisma
-Estilo: Tailwind CSS
+Os dados do filme são copiados do TMDb para o evento no momento da criação. Depois disso o evento não depende mais da API externa.
 
-Escolhi essa combinação porque front e back ficam na mesma linguagem (JavaScript), o que facilita bastante já que estou construindo o projeto sozinho em pouco tempo.
+O front-end usa React Router, um cliente HTTP central em `src/api/client.js` e um `AuthContext` que guarda token e usuário no `localStorage`. As rotas protegidas por papel são conveniência de navegação; a autorização de verdade está no back-end.
 
-## Decisões do projeto
+## Como executar
 
-Estou registrando as decisões técnicas e o porquê de cada uma em docs/DECISIONS.md, conforme vou avançando. Começou com as decisões de produto e de stack (pista de ingressos ao invés de mapa de assentos, uso do TMDb, JavaScript ao invés de TypeScript, como o pagamento simulado vai funcionar) e agora também tem as decisões do front-end (estilização, autenticação, comunicação com a API e proteção de rotas).
+### Pré-requisitos
 
-## Uso de IA
+Node.js 18 ou superior. São dois terminais: um para o back-end e outro para o front-end.
 
-Estou usando IA (Claude) para me ajudar a planejar e organizar o projeto, já que é a primeira vez que faço um desafio desse tipo. Vou detalhar isso melhor em docs/AI_USAGE.md conforme o projeto avança.
+### 1. Banco de dados
 
-## Como rodar o projeto
-
-Precisa de Node.js (18 ou superior). São dois terminais: um para o back-end e outro para o front-end.
-
-O banco tem duas opções. O projeto roda igual nas duas, o que muda é só a `DATABASE_URL` e se você precisa criar o banco na mão. A **opção A (Neon)** é a que usamos no desenvolvimento e a mesma que o deploy usa.
-
-### Back-end (sobe em http://localhost:3000)
-
-```bash
-cd backend
-npm install
-```
-
-Copie o `.env.example` para `.env` e preencha conforme a opção escolhida.
+Duas opções. O projeto roda igual nas duas: muda só a `DATABASE_URL` e se você precisa criar o banco na mão. A **opção A (Neon)** é a usada no desenvolvimento.
 
 **Opção A - Neon (PostgreSQL na nuvem, sem instalar nada)**
 
@@ -83,19 +89,33 @@ Se o `psql` não for reconhecido no Windows, use o caminho completo `"C:\Program
 DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/eventos"
 ```
 
-**As demais variáveis (valem para as duas opções)**
+### 2. Back-end (sobe em http://localhost:3000)
 
-Para `JWT_SECRET`, gere uma string aleatória:
+```bash
+cd backend
+npm install
+```
+
+Copie o `.env.example` para `.env` e preencha:
+
+| Variável | O que é |
+|---|---|
+| `DATABASE_URL` | a do passo 1 |
+| `JWT_SECRET` | string aleatória, gere com o comando abaixo |
+| `TMDB_API_KEY` | chave gratuita do TMDb |
+| `PORT` | 3000 |
+| `CORS_ORIGIN` | endereço do front-end |
+| `APP_PUBLIC_URL` | endereço do front-end |
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-A `TMDB_API_KEY` é gratuita e sai de https://www.themoviedb.org/settings/api (crie uma conta e peça uma chave de desenvolvedor).
+A `TMDB_API_KEY` sai de https://www.themoviedb.org/settings/api (crie uma conta e peça uma chave de desenvolvedor).
 
 `CORS_ORIGIN` e `APP_PUBLIC_URL` já vêm apontando para `http://localhost:5173` e só mudam no deploy. As duas guardam o endereço do **front-end**: a primeira diz quem pode chamar a API, e a segunda é a base dos links de compartilhamento de ingresso, que precisam abrir uma tela, não um JSON.
 
-**Criar as tabelas e popular com dados de teste**
+Crie as tabelas e popule com os dados de teste:
 
 ```bash
 npx prisma migrate dev
@@ -112,7 +132,7 @@ npm run dev
 
 Se você escolheu o Neon, a primeira requisição depois de um tempo parado pode demorar de 15 a 30 segundos: o plano gratuito suspende o banco quando ele fica ocioso, e ele precisa acordar. Não é erro - da segunda em diante responde normal.
 
-### Front-end (sobe em http://localhost:5173)
+### 3. Front-end (sobe em http://localhost:5173)
 
 ```bash
 cd frontend
@@ -125,10 +145,77 @@ Copie o `.env.example` para `.env` - ele já vem com `VITE_API_URL=http://localh
 npm run dev
 ```
 
-Abra http://localhost:5173. Durante a fase de teste, a tela de login terá três atalhos: cliente, organizador e um usuário `GATE` de demonstração vinculado ao evento do seed. Em eventos normais, o usuário `GATE` será criado automaticamente quando o evento for publicado.
+Abra http://localhost:5173. Para gerar a build de produção, `npm run build`.
 
-Para gerar a build de produção do front-end:
+## Usuários de teste
+
+Todos criados pelo `npx prisma db seed`. A tela de login tem três atalhos que preenchem essas credenciais.
+
+| Papel | E-mail | Senha |
+|---|---|---|
+| Organizador | organizador@teste.com | senha123 |
+| Cliente 1 | cliente1@teste.com | senha123 |
+| Cliente 2 | cliente2@teste.com | senha123 |
+| Portaria do evento "A Origem" | portaria@teste.com | senha123 |
+
+O seed também cria o evento publicado **A Origem**, com ingressos disponíveis.
+
+A credencial de portaria fixa é uma exceção de demonstração. Em eventos normais ela nasce com e-mail e senha aleatórios no momento em que o organizador publica o evento, e a senha é exibida uma única vez.
+
+## Como testar (roteiros)
+
+**TESTE 1 - Fluxo completo**
+
+1. Entre como organizador, clique em "Novo evento", busque um filme, preencha data, local, capacidade e preço, e publique. **Anote o usuário e a senha da portaria que aparecem ao publicar**, a senha só é mostrada nesse momento.
+2. Saia e entre como cliente 1. Abra o evento recém-criado, escolha 2 ingressos e reserve.
+3. No checkout, clique em "Simular aprovação".
+4. Vá em "Meus ingressos": devem aparecer 2 ingressos, cada um com seu QR e seu código.
+5. Copie o link de um deles e abra numa janela anônima. O ingresso aparece sem pedir login.
+6. Saia e entre com a credencial de portaria anotada no passo 1. Digite o código de um dos ingressos: **VÁLIDO**.
+
+**TESTE 2 - Pagamento recusado**
+
+1. Anote os lugares disponíveis do evento na tela de detalhe.
+2. Entre como cliente 2, reserve 1 ingresso e clique em "Simular recusa".
+3. Confira: nenhum ingresso foi criado em "Meus ingressos" e a disponibilidade voltou ao valor anotado.
+
+**TESTE 3 - Os quatro estados da portaria**
+
+Entre com `portaria@teste.com`, que é a credencial do evento **A Origem** do seed. Antes, compre um ingresso de A Origem como cliente para ter um código válido em mãos.
+
+| Passo | Resultado esperado |
+|---|---|
+| Código novo de A Origem | VÁLIDO |
+| O mesmo código de novo | JÁ UTILIZADO |
+| Digitar `abc123` | INVÁLIDO |
+| Código de um ingresso de outro evento | EVENTO ERRADO |
+
+Para o último caso, use um dos ingressos gerados no TESTE 1, que são de outro evento.
+
+## Testes automatizados
 
 ```bash
-npm run build
+cd backend
+npm test
 ```
+
+Quatro testes de integração cobrindo as regras que, se quebrarem, quebram o produto: reservar além da capacidade, pagamento recusado devolvendo a capacidade sem gerar ingresso, código inexistente recusado na portaria e o mesmo ingresso não sendo validado duas vezes.
+
+São testes de integração de propósito. As duas primeiras regras acontecem dentro do `UPDATE` do Postgres, então com o banco dublado eu estaria testando o dublê, não a regra.
+
+## Decisões importantes
+
+Estão em [docs/DECISIONS.md](docs/DECISIONS.md), no formato decisão / por quê / o que descartei. O fluxo do sistema está em [docs/FLOW.md](docs/FLOW.md) e o modelo de dados em [docs/ERD.md](docs/ERD.md).
+
+## Limitações e problemas conhecidos
+
+- **A leitura do QR pela câmera exige contexto seguro.** Funciona em `localhost` e em HTTPS. Em rede local por IP (`http://192.168...`) o navegador bloqueia a câmera. A digitação do código cobre o requisito em qualquer cenário.
+- **Os três papéis dividem o mesmo `localStorage`.** Entrar com um papel encerra a sessão do outro na mesma janela do navegador. Para percorrer dois papéis ao mesmo tempo, use uma janela anônima para o segundo. A tela da portaria foi endurecida contra isso enquanto a aba fica aberta, mas um F5 depois de trocar de conta cai na mesma limitação.
+- **A edição de evento não tem tela.** `PATCH /events/:id` existe, valida dono e impede capacidade menor que o já vendido, mas o botão "Editar" no painel está desabilitado de propósito.
+- **Os testes automatizados usam o mesmo banco do desenvolvimento.** Eles criam e apagam os próprios registros e não tocam no seed, mas o correto seria um banco separado só para testes.
+- **Não há cancelamento de ingresso nem devolução ao estoque depois do pagamento aprovado.** A capacidade só volta no caminho da recusa.
+- **O deploy não foi publicado.** As instruções locais acima são o caminho para avaliar o projeto.
+
+## Uso de IA
+
+Está em [docs/AI_USAGE.md](docs/AI_USAGE.md): quais ferramentas usei, em que partes, e o que fiz sem elas.

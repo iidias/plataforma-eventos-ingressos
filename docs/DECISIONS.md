@@ -23,7 +23,7 @@ D8 - Tailwind com utilitários, sem arquivos de CSS separados.
 O estilo fica na própria marcação, junto do componente. Assim eu não preciso ficar pulando entre o JSX e um arquivo .css pra entender de onde vem cada regra, e não corro o risco de deixar CSS morto pra trás quando mudo uma tela. As cores e fontes do Figma ficam registradas uma vez só no CSS principal, e o resto do projeto só reaproveita.
 
 D9 - Autenticação no front com Context API e localStorage.
-Guardo o token e o usuário num AuthContext e salvo no localStorage pra sessão sobreviver ao reload. 
+Guardo o token e o usuário num AuthContext e salvo no localStorage pra sessão sobreviver ao reload. O preço disso aparece quando dois papéis são usados ao mesmo tempo: o localStorage é um só por navegador, então entrar como cliente numa aba encerra a sessão da portaria na outra. Descobri isso testando a portaria com o QR aberto em outra aba, e a validação passou a responder "acesso negado". A tela da portaria hoje envia o token do próprio contexto, e não o do localStorage, o que a protege enquanto a aba fica aberta. A cura completa seria separar o armazenamento por papel, e não vale o custo aqui: para percorrer dois papéis ao mesmo tempo, usa-se uma janela anônima. Está registrado nas limitações do README.
 
 D10 - Um cliente HTTP central em api/client.js.
 Todas as telas chamam a API pelo mesmo lugar. Ele monta a URL a partir do VITE_API_URL, coloca o header Authorization quando existe token e, se a resposta não vier ok, joga um erro com a mensagem que o próprio back-end mandou. O ganho é que erro é tratado igual em todo lugar e a URL da API não fica espalhada pelo código, no deploy ela muda num arquivo só.
