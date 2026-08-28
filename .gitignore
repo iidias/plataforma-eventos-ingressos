@@ -8,3 +8,6 @@ codigo telas figma/
 *.log
 .DS_Store
 skills-lock.json
+.claude
+.windsurf
+.agents
