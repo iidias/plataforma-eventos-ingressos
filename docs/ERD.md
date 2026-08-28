@@ -33,7 +33,9 @@ Guarda só se aquela reserva foi aprovada ou recusada. Como o pagamento é simul
 
 Só nasce depois que o pagamento é aprovado. Se a reserva foi de 2 ingressos, nascem 2 `Ticket`, cada um com seu próprio código.
 
-Cada ingresso tem: um `code` (o que vira o QR precisa ser difícil de forjar), um `status` que começa `VALID` e vira `USED` quando é validado na portaria (é isso que impede usar o mesmo ingresso duas vezes), e um `shareToken` (o código usado só no link de compartilhamento, diferente do `code`, porque um é pra portaria ler e o outro é pra mandar pra alguém).
+Cada ingresso tem: um `code`, um `status` que começa `VALID` e vira `USED` quando é validado na portaria (é isso que impede usar o mesmo ingresso duas vezes), e um `shareToken` (o código usado só no link de compartilhamento, diferente do `code`, porque um é pra portaria ler e o outro é pra mandar pra alguém).
+
+O `code` guarda **apenas o payload** da credencial: 12 caracteres sorteados entre 32. A credencial que o cliente vê e a portaria lê é `IFM-<payload>-<tag>`, e a **tag não é armazenada** — ela é um HMAC do payload, recalculado com o segredo do servidor toda vez que o ingresso é entregue ao dono ou conferido na entrada. É isso que torna o código difícil de forjar: mexer nos caracteres quebra a assinatura, e a portaria confere a assinatura antes de consultar o banco (ver D22).
 
 ## Como as tabelas se conectam
 

@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js';
-import { createTicketsForReservation } from './ticketService.js';
+import { createTicketsForReservation, withCredential } from './ticketService.js';
 import { releaseExpiredReservations } from './reservationService.js';
 
 const REJECTION_REASON = 'Pagamento recusado pela operadora (simulado)';
@@ -98,7 +98,8 @@ export async function processPayment(reservationId, customerId, outcome) {
       outcome: 'approved',
       payment,
       reservation: { ...reservation, status: 'PAID' },
-      tickets,
+      // O dono recebe a credencial assinada, não o payload que ficou no banco.
+      tickets: tickets.map(withCredential),
     };
   });
 }

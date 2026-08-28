@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import prisma from '../lib/prisma.js';
+import { generatePayload, toCredential } from '../lib/ticketCode.js';
 
 const eventSelect = { id: true, title: true, imageUrl: true, eventDate: true, venue: true };
 
@@ -8,33 +9,30 @@ const ticketInclude = {
   event: { select: eventSelect },
 };
 
-// Alfabeto sem I, L, O e U: ninguém confunde 1 com I nem 0 com O ao digitar o
-// código na portaria. São 8 caracteres sorteados entre 32, ou 40 bits. Como
-// 256 é múltiplo exato de 32, o resto da divisão não distorce o sorteio.
-const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-
 function notFound() {
   const error = new Error('Ingresso não encontrado');
   error.status = 404;
   return error;
 }
 
-function generateCode() {
-  const chars = Array.from(randomBytes(8), (byte) => ALPHABET[byte % 32]);
-
-  return `IFM-${new Date().getFullYear()}-${chars.join('')}`;
-}
-
-// Monta os dados de um ingresso.
+// O que vai para a coluna `code` é só o payload da credencial. A assinatura
+// não é gravada: ela é recalculada por toCredential quando o ingresso é
+// entregue ao dono, e por verify quando a portaria confere (ver ticketCode.js).
 function buildTicketData(reservation) {
   return {
     reservationId: reservation.id,
     eventId: reservation.eventId,
     customerId: reservation.customerId,
-    code: generateCode(),
+    code: generatePayload(),
     shareToken: randomBytes(24).toString('hex'),
     status: 'VALID',
   };
+}
+
+// Troca o payload guardado no banco pela credencial assinada completa. É esta
+// forma que o dono vê na tela, leva no QR e dita para a portaria.
+export function withCredential(ticket) {
+  return { ...ticket, code: toCredential(ticket.code) };
 }
 
 /**
@@ -54,12 +52,14 @@ export async function createTicketsForReservation(tx, reservation) {
 
 // Ingressos do cliente logado. Só reserva paga tem ingresso, mas o filtro por
 // status fica explícito para o dia em que existir cancelamento.
-export function listCustomerTickets(customerId) {
-  return prisma.ticket.findMany({
+export async function listCustomerTickets(customerId) {
+  const tickets = await prisma.ticket.findMany({
     where: { customerId, reservation: { status: 'PAID' } },
     include: ticketInclude,
     orderBy: [{ reservation: { createdAt: 'desc' } }, { createdAt: 'asc' }],
   });
+
+  return tickets.map(withCredential);
 }
 
 // Ingresso de outro cliente é tratado como inexistente: quem não é dono não
@@ -69,7 +69,7 @@ export async function getOwnedTicket(id, customerId) {
 
   if (!ticket || ticket.customerId !== customerId) throw notFound();
 
-  return ticket;
+  return withCredential(ticket);
 }
 
 export async function buildShareUrl(id, customerId) {
@@ -80,11 +80,16 @@ export async function buildShareUrl(id, customerId) {
 }
 
 // Visão pública do ingresso, aberta por qualquer um que tenha o link.
+//
+// O select não devolve o `code`: o link é público e circula por WhatsApp, então
+// não pode carregar a credencial que a portaria valida — quem recebe o link
+// veria o ingresso e poderia entrar no lugar do titular. Aqui só saem o estado
+// do ingresso e os dados do evento, que é o que a página compartilhada precisa.
+// Nada sobre o dono, também.
 export async function getPublicTicket(shareToken) {
   const ticket = await prisma.ticket.findUnique({
     where: { shareToken },
     select: {
-      code: true,
       status: true,
       usedAt: true,
       event: { select: { title: true, imageUrl: true, eventDate: true, venue: true } },

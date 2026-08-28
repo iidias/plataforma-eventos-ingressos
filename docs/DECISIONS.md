@@ -65,10 +65,16 @@ A reserva já incrementa `soldCount` no instante em que nasce (D18), então o pa
 D21 - Um QR por Ticket, não por Reservation.
 A portaria valida pessoa por pessoa, não a compra inteira: se a reserva foi de 2 ingressos, são 2 entradas, cada uma com seu próprio QR. Isso já estava implícito no modelo, cada `Ticket` tem `code` e `shareToken` próprios (ver ERD.md), mas a primeira versão da tela "Meus Ingressos → Válido" mostrava um card único com um QR e um campo "quantidade", o que não faz sentido: com um QR só, a portaria não sabe quantas das pessoas do grupo já entraram, e compartilhar o link vazaria o acesso de todo mundo, não só de quem recebeu. A tela foi refeita como um grid com um card por `Ticket`, cada um com seu QR, código, selo de status e link de compartilhamento próprios, no mesmo padrão de grid responsivo já usado na grade de filmes da tela principal.
 
-D22 - Código de ingresso curto, no lugar do JWT assinado
-A portaria consulta o banco de qualquer forma ("já utilizado" e "evento errado" são estados), sendo a consulta inevitável, a assinatura não acrescenta garantia, o que barra a fraude é o código não exitir na tabela.
-Como fica seguro: 8 caracteres sorteados entre 32 = 40 bits, validados no servidor.
-O que descartei: manter o JWT com um id curto ao lado, dois códigos para a mesma coisa.
+D22 - O código do ingresso é uma credencial assinada, não um identificador sorteado
+Esta decisão substitui a versão anterior, que dizia: "a portaria consulta o banco de qualquer forma, sendo a consulta inevitável a assinatura não acrescenta garantia; o que barra a fraude é o código não existir na tabela". A premissa continua verdadeira — a consulta é mesmo inevitável, porque "já utilizado" e "evento errado" são estado e estado não cabe dentro do código. A conclusão é que estava errada, e o erro é de categoria: o banco responde "em que estado está este ingresso?", nunca "fui eu que emiti este código?". Tratar presença na tabela como prova de emissão só funciona enquanto o valor for secreto, e o desafio pedia um código "que não possa ser forjado" — isso é propriedade do próprio código, não da consulta que vem depois.
+
+Como fica agora: o banco guarda apenas o payload, 12 caracteres sorteados entre 32 (60 bits). A credencial que o cliente recebe e a portaria lê é `IFM-<payload>-<tag>`, onde a tag são os 6 primeiros caracteres de um HMAC-SHA256 sobre `v1|<payload>`, com o `TICKET_SECRET` do servidor. A tag **não é gravada**: é recalculada quando o ingresso é entregue ao dono e quando a portaria confere. Um dump do banco, portanto, não devolve credenciais prontas para uso.
+
+Alterar um caractere qualquer do payload sem conhecer o segredo produz uma tag que não confere, e a portaria verifica a assinatura **antes** do lookup — código forjado nem chega ao banco. O `v1|` dentro da mensagem assinada existe desde a primeira versão para que uma troca futura de segredo possa conviver com as credenciais já emitidas.
+
+O objetivo não é substituir a checagem de estado, é somar uma camada antes dela: sem assinatura, a única barreira era o valor ser secreto, e qualquer vazamento derrubava o sistema inteiro. O tamanho também mudou de mão: 40 bits tinham sido escolhidos pelo limite da digitação na portaria, e não por segurança. A credencial cresceu de 17 para 23 caracteres, o que continua ditável por telefone.
+
+O que descartei: voltar ao JWT (infalsificável, mas indigitável, e carregando header e claims que ninguém usa); assinatura assimétrica (emissor e validador são o mesmo servidor, então simétrico basta); guardar a tag no banco (redundante, e apagaria justamente a proteção contra vazamento do banco).
 
 D23 - A portaria tem 4 estados, e "evento errado" não se funde com "inválido"
 O desafio enumera os quatro. E são situações diferentes na porta: inválido é fraude, evento errado é gente que pagou e está na sala errada. 

@@ -104,6 +104,7 @@ Copie o `.env.example` para `.env` e preencha:
 |---|---|
 | `DATABASE_URL` | a do passo 1 |
 | `JWT_SECRET` | string aleatória, gere com o comando abaixo |
+| `TICKET_SECRET` | string aleatória, gere do mesmo jeito — assina a credencial do ingresso |
 | `TMDB_API_KEY` | chave gratuita do TMDb |
 | `PORT` | 3000 |
 | `CORS_ORIGIN` | endereço do front-end |
@@ -112,6 +113,8 @@ Copie o `.env.example` para `.env` e preencha:
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
+
+Gere um valor diferente para cada um dos dois segredos. O `TICKET_SECRET` é o que assina o código do ingresso: sem ele configurado a aplicação falha ao emitir ou validar um ingresso, de propósito — não existe valor padrão.
 
 A `TMDB_API_KEY` sai de https://www.themoviedb.org/settings/api (crie uma conta e peça uma chave de desenvolvedor).
 

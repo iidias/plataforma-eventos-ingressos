@@ -563,7 +563,7 @@ const shareToken = randomBytes(24).toString('hex');
 `POST /tickets/:id/share` devolve `{ shareUrl }` = `APP_PUBLIC_URL` + `/i/` + shareToken.
 
 **91. Rota pública do ingresso**
-`GET /public/tickets/:shareToken`, sem login. **Não devolva e-mail nem id do dono** — só evento, data, local e o código para o QR. Token inexistente → `404`.
+`GET /public/tickets/:shareToken`, sem login. **Não devolva e-mail nem id do dono, nem o `code`** — só evento, data, local e o status do ingresso. O link é público e circula por WhatsApp: se ele carregasse o código, quem recebesse o link teria junto a credencial de entrada e poderia passar na portaria no lugar do titular. O código fica só na rota autenticada do dono. Token inexistente → `404`.
 
 **92. Meus ingressos**
 Lista com evento, data, local e status (válido ou utilizado). Trate loading, vazio ("você ainda não tem ingressos") e erro.

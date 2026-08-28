@@ -6,12 +6,13 @@
 // primeiras regras acontecem dentro do UPDATE do Postgres (D18). Com o banco
 // dublado eu estaria testando o dublê, não a regra.
 import 'dotenv/config';
-import { afterAll, beforeAll, expect, test } from 'vitest';
+import { afterAll, beforeAll, expect, test, vi } from 'vitest';
 
 import prisma from '../src/lib/prisma.js';
 import { createReservation } from '../src/services/reservationService.js';
 import { processPayment } from '../src/services/paymentService.js';
 import { validateTicket } from '../src/services/gateService.js';
+import { getPublicTicket } from '../src/services/ticketService.js';
 
 // Sufixo pelo relógio: cada execução cria os seus próprios registros e não
 // esbarra em e-mail repetido se uma limpeza anterior tiver falhado.
@@ -112,4 +113,56 @@ test('o mesmo ingresso não é validado duas vezes', async () => {
 
   expect(primeira.result).toBe('VALID');
   expect(segunda.result).toBe('ALREADY_USED');
+});
+
+// Alfabeto da credencial: os 32 símbolos sem I, L, O e U.
+const CREDENCIAL = /^IFM-[0-9A-HJKMNP-TV-Z]{12}-[0-9A-HJKMNP-TV-Z]{6}$/;
+
+// Troca o último caractere por outro do alfabeto, para adulterar sem sair do
+// formato — é justamente o caso que a assinatura precisa pegar.
+const adultera = (parte) => parte.slice(0, -1) + (parte.at(-1) === 'Z' ? 'Y' : 'Z');
+
+test('credencial adulterada e invalida sem consultar o banco', async () => {
+  const reserva = await createReservation(cliente.id, { eventId: evento.id, quantity: 1 });
+  const { tickets } = await processPayment(reserva.id, cliente.id, 'approve');
+  const credencial = tickets[0].code;
+
+  expect(credencial).toMatch(CREDENCIAL);
+
+  const [prefixo, payload, tag] = credencial.split('-');
+
+  const adulteradas = [
+    `${prefixo}-${adultera(payload)}-${tag}`, // payload alterado
+    `${prefixo}-${payload}-${adultera(tag)}`, // tag alterada
+    'IFM-2026-NAOEXISTE', //                     formato invalido
+  ];
+
+  const lookup = vi.spyOn(prisma.ticket, 'findUnique');
+
+  for (const adulterada of adulteradas) {
+    const resultado = await validateTicket(adulterada, evento.id, portaria.id);
+
+    expect(resultado.result).toBe('INVALID');
+  }
+
+  // O ponto do HMAC: nenhuma das tres chegou ao banco.
+  expect(lookup).not.toHaveBeenCalled();
+  lookup.mockRestore();
+
+  // E a credencial legitima continua valendo depois das tentativas.
+  const legitima = await validateTicket(credencial, evento.id, portaria.id);
+
+  expect(legitima.result).toBe('VALID');
+});
+
+test('o ingresso publico nao expoe o codigo de entrada', async () => {
+  const reserva = await createReservation(cliente.id, { eventId: evento.id, quantity: 1 });
+  const { tickets } = await processPayment(reserva.id, cliente.id, 'approve');
+
+  const publico = await getPublicTicket(tickets[0].shareToken);
+
+  // O contrato inteiro, e nao so a ausencia de um campo: a visao publica
+  // devolve estado e evento, nada alem disso.
+  expect(Object.keys(publico).sort()).toEqual(['event', 'status', 'usedAt']);
+  expect(publico).not.toHaveProperty('code');
 });
