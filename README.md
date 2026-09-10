@@ -2,7 +2,7 @@
 
 Projeto feito para o desafio técnico Elite Dev (Verzel).
 
-Deploy: ainda não publicado.
+Deploy: ingressofilm.vercel.app
 
 > Um organizador cria eventos a partir de um catálogo de filmes, define data, local, capacidade e preço. O cliente navega pelos eventos, reserva, paga (de forma simulada) e recebe um ingresso com QR Code, que também pode compartilhar por link. Na entrada, a portaria valida esse ingresso.
 
